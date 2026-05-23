@@ -1,35 +1,27 @@
-import { useEffect, useState } from "react";
-
-const BACKEND_URL = "http://localhost:8000";
+import { useState } from "react";
+import HomePage from "./HomePage";
+import SimulationLab from "./SimulationLab";
+import RealLabGuide from "./RealLabGuide";
 
 export default function App() {
-  const [health, setHealth] = useState({ state: "checking" });
+  const [view, setView] = useState({ name: "home" });
 
-  useEffect(() => {
-    fetch(`${BACKEND_URL}/health`)
-      .then((r) => r.json())
-      .then((data) => setHealth({ state: "ok", data }))
-      .catch((err) => setHealth({ state: "error", error: String(err) }));
-  }, []);
+  function openExperiment(experimentId, mode) {
+    setView({ name: mode, experimentId });
+  }
+  function goHome() {
+    setView({ name: "home" });
+  }
 
-  return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-8">
-      <div className="max-w-xl w-full bg-white rounded-2xl shadow p-8 space-y-4">
-        <h1 className="text-3xl font-bold">AI Lab Companion</h1>
-        <p className="text-slate-600">
-          Scaffold (M0). Two modes coming: Real Lab Guide and Simulation Lab.
-        </p>
-        <div className="rounded-lg bg-slate-100 p-4 font-mono text-sm">
-          <div className="font-semibold mb-1">Backend /health</div>
-          {health.state === "checking" && <div>checking…</div>}
-          {health.state === "ok" && (
-            <div className="text-emerald-700">{JSON.stringify(health.data)}</div>
-          )}
-          {health.state === "error" && (
-            <div className="text-red-700">{health.error}</div>
-          )}
-        </div>
-      </div>
-    </main>
-  );
+  if (view.name === "simulation") {
+    return (
+      <SimulationLab experimentId={view.experimentId} onBack={goHome} />
+    );
+  }
+  if (view.name === "real-lab") {
+    return (
+      <RealLabGuide experimentId={view.experimentId} onBack={goHome} />
+    );
+  }
+  return <HomePage onOpen={openExperiment} />;
 }
