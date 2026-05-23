@@ -17,3 +17,12 @@ uvicorn app.main:app --reload --port 8000
 ```
 
 Then `GET http://localhost:8000/health` -> `{"status":"ok"}`.
+
+## Endpoints
+
+- `GET /health` — liveness.
+- `GET /experiments` — list of `{id, title, summary, grade_level, duration_minutes}`.
+- `GET /experiments/{id}` — full experiment JSON (see `experiments/` at repo root).
+
+Experiment JSON files are validated by `app/experiments.py` (Pydantic). The
+file's stem must equal its `id` (e.g., `density-column.json` -> `id: density-column`).

@@ -1,0 +1,147 @@
+{
+  "id": "density-column",
+  "title": "Liquid Density Column",
+  "summary": "Stack four household liquids in a clear glass to reveal that liquids have different densities and arrange themselves heaviest on the bottom.",
+  "grade_level": "9-10",
+  "duration_minutes": 20,
+  "learning_goals": [
+    "Define density as mass per unit volume.",
+    "Predict the order of layers from densest to least dense.",
+    "Explain why liquids that do not mix form stable layers."
+  ],
+  "materials": [
+    { "name": "Tall clear glass or jar", "quantity": "1", "notes": "Straight sides make layers easier to see." },
+    { "name": "Honey", "quantity": "about 2 tablespoons" },
+    { "name": "Dish soap (any color)", "quantity": "about 2 tablespoons" },
+    { "name": "Water", "quantity": "about 2 tablespoons", "notes": "Add a drop of food coloring if you have it, to see the layer clearly." },
+    { "name": "Vegetable or olive oil", "quantity": "about 2 tablespoons" },
+    { "name": "Spoon", "quantity": "1", "notes": "Used to pour gently against the side of the glass." }
+  ],
+  "safety": [
+    "Work over a tray or paper towels — drips happen.",
+    "Do not drink the column.",
+    "Wash hands after handling dish soap."
+  ],
+  "steps": [
+    {
+      "id": "setup",
+      "instruction": "Place the empty glass on a flat surface with your four liquids lined up next to it: honey, dish soap, water, and oil. Have a spoon ready.",
+      "checkpoint": {
+        "expected_state": "An empty clear glass on a flat surface, with four containers of liquid (honey, dish soap, water, oil) visible nearby and a spoon present.",
+        "success_criteria": [
+          "Exactly one clear glass is visible and it is empty.",
+          "At least three of the four expected liquids are visible near the glass.",
+          "A spoon is visible in the frame."
+        ],
+        "failure_hints": [
+          "If the glass already has liquid in it, empty and rinse it before starting.",
+          "If you cannot see all the liquids, slide them closer to the camera so the assistant can confirm they are there."
+        ]
+      },
+      "simulation": {
+        "observation": "You see an empty glass and four containers: a thick golden honey, a colored dish soap, water, and yellow oil.",
+        "tutor_prompts": [
+          "Before we pour anything, which of these four liquids do you think is the densest? Why?",
+          "Which do you think will end up on top of the column, and what makes you say that?"
+        ]
+      }
+    },
+    {
+      "id": "pour-honey",
+      "instruction": "Pour the honey straight down into the center of the glass. Try not to let it touch the sides on the way down.",
+      "checkpoint": {
+        "expected_state": "The glass now has a single layer of honey at the bottom, roughly one-quarter to one-third full, with clean glass walls above it.",
+        "success_criteria": [
+          "A thick amber-colored layer is visible at the bottom of the glass.",
+          "The walls of the glass above the honey are not heavily coated.",
+          "No other liquid has been added yet."
+        ],
+        "failure_hints": [
+          "If honey is smeared up the sides, that's fine — it will settle. Wait a few seconds before the next pour.",
+          "If the honey layer looks tiny, you can add a little more before moving on."
+        ]
+      },
+      "simulation": {
+        "observation": "The honey settles slowly into a thick amber layer at the bottom of the glass.",
+        "tutor_prompts": [
+          "Honey is mostly sugar dissolved in a little water. How would dissolving lots of sugar change the density compared to plain water?",
+          "Why do you think the honey is moving so slowly compared to how water would pour?"
+        ]
+      }
+    },
+    {
+      "id": "pour-soap",
+      "instruction": "Now tilt the glass slightly and pour the dish soap gently down the inside wall of the glass so it lands on top of the honey without splashing through it.",
+      "checkpoint": {
+        "expected_state": "Two distinct layers are visible: honey on the bottom and dish soap resting above it, separated by a clear boundary.",
+        "success_criteria": [
+          "Two separate colored layers are visible inside the glass.",
+          "The boundary between the layers is roughly horizontal.",
+          "The layers have not mixed into a single murky color."
+        ],
+        "failure_hints": [
+          "If the layers mixed, that usually means the soap was poured too fast or from too high. Let things settle for thirty seconds and look again — they often re-separate.",
+          "If you see only one layer, check whether the dish soap actually made it into the glass."
+        ]
+      },
+      "simulation": {
+        "observation": "A second colored layer sits cleanly on top of the honey, with a visible flat boundary between them.",
+        "tutor_prompts": [
+          "The soap is sitting on the honey instead of sinking into it. What does that tell you about the soap's density compared to honey's?",
+          "What do you predict will happen when we pour water in next?"
+        ]
+      }
+    },
+    {
+      "id": "pour-water",
+      "instruction": "Slowly pour the water down the inside wall of the glass on top of the dish soap. Go gently — the water layer is the easiest one to break.",
+      "checkpoint": {
+        "expected_state": "Three layers are now visible: honey on the bottom, dish soap in the middle, and water on top.",
+        "success_criteria": [
+          "Three separate horizontal layers are visible.",
+          "The water layer sits clearly on top of the soap layer, not mixed into it.",
+          "The original honey layer at the bottom is still intact."
+        ],
+        "failure_hints": [
+          "If the water punched through the soap, pause for a minute — sometimes it floats back up.",
+          "If the water and soap have visibly mixed, that's still a valid result — note what happened before continuing."
+        ]
+      },
+      "simulation": {
+        "observation": "A clear (or lightly colored) water layer rests on top of the dish soap. You can count three distinct bands now.",
+        "tutor_prompts": [
+          "Rank the three liquids you've poured so far from densest to least dense based on what you see.",
+          "Water is denser than oil but less dense than dish soap. What does that tell you about the structure of soap versus oil?"
+        ]
+      }
+    },
+    {
+      "id": "pour-oil",
+      "instruction": "Finally, pour the oil slowly on top of the water. You should now see four layers.",
+      "checkpoint": {
+        "expected_state": "A finished density column with four visible layers, from bottom to top: honey, dish soap, water, oil.",
+        "success_criteria": [
+          "Four distinct horizontal layers are visible.",
+          "The top layer is a translucent yellow oil.",
+          "No layer is obviously inverted from the expected order."
+        ],
+        "failure_hints": [
+          "If you only count three layers, check whether the water and oil merged — they should not.",
+          "If the column looks cloudy, give it a minute to settle and try again."
+        ]
+      },
+      "simulation": {
+        "observation": "Four bands of color stack neatly in the glass: amber honey, colored soap, water, and a yellow oil layer on top.",
+        "tutor_prompts": [
+          "You correctly predicted some of the order. Which layer surprised you, and why?",
+          "If you very gently dropped a small object — say, a grape — into the column, where do you think it would stop, and why?"
+        ]
+      }
+    }
+  ],
+  "reflection": [
+    "List the four liquids in order from densest to least dense.",
+    "Why do oil and water never mix into a single uniform layer, even if you stir them?",
+    "Name another pair of common liquids that you would expect to form layers and explain your reasoning."
+  ]
+}
