@@ -5,7 +5,7 @@ __pycache__/
 .venv/
 venv/
 .env
-
+.edge-profile
 # Node
 node_modules/
 dist/

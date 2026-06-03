@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getHealth, listExperiments } from "./api";
 
-export default function HomePage({ onOpen }) {
+export default function HomePage({ onOpen, onBack }) {
   const [health, setHealth] = useState({ state: "checking" });
   const [experiments, setExperiments] = useState({ state: "loading" });
 
@@ -20,6 +20,15 @@ export default function HomePage({ onOpen }) {
     <main className="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-10">
       <div className="max-w-3xl mx-auto space-y-8">
         <header className="space-y-2">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="text-sm text-indigo-600 hover:text-indigo-700"
+            >
+              ← Home
+            </button>
+          )}
           <h1 className="text-3xl md:text-4xl font-bold">AI Lab Companion</h1>
           <p className="text-slate-600">
             A hands-free lab assistant for students. Pick an experiment, then choose a mode.
