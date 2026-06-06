@@ -5,6 +5,14 @@ import {
   tutorTransition,
   verifyCheckpoint,
 } from "./api";
+import {
+  ErrorCard,
+  Panel,
+  PageShell,
+  PrimaryButton,
+  SecondaryButton,
+  SectionLabel,
+} from "./ui";
 
 export default function RealLabGuide({ experimentId, onBack }) {
   const [exp, setExp] = useState(null);
@@ -72,16 +80,16 @@ export default function RealLabGuide({ experimentId, onBack }) {
 
   if (loadError) {
     return (
-      <Shell title="Real Lab Guide" onBack={onBack}>
+      <PageShell title="Real Lab Guide" onBack={onBack} backLabel="Experiments">
         <ErrorCard title="Could not load experiment" detail={loadError} />
-      </Shell>
+      </PageShell>
     );
   }
   if (!exp || !step) {
     return (
-      <Shell title="Real Lab Guide" onBack={onBack}>
-        <p className="text-slate-500">Loading…</p>
-      </Shell>
+      <PageShell title="Real Lab Guide" onBack={onBack} backLabel="Experiments">
+        <p className="text-white/60">Loading…</p>
+      </PageShell>
     );
   }
 
@@ -122,7 +130,7 @@ export default function RealLabGuide({ experimentId, onBack }) {
       setResult(res);
       if (voiceOn) {
         if (res.passed) {
-          // M5: ask the LLM to compose the next instruction sentence, then speak it.
+          // Ask the LLM to compose the next instruction sentence, then speak it.
           const nextIdx = stepIndex + 1;
           if (nextIdx < exp.steps.length) {
             try {
@@ -158,45 +166,51 @@ export default function RealLabGuide({ experimentId, onBack }) {
   }
 
   return (
-    <Shell title={`Real Lab Guide — ${exp.title}`} onBack={onBack}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="text-sm text-slate-600">
-          Step {stepIndex + 1} of {exp.steps.length}: <strong>{step.id}</strong>
-        </div>
-        <label className="inline-flex items-center gap-2 text-sm">
+    <PageShell
+      kicker="AI Lab Supporter"
+      title={exp.title}
+      onBack={onBack}
+      backLabel="Experiments"
+      right={
+        <label className="inline-flex items-center gap-2 text-xs font-bold uppercase text-white/70">
           <input
             type="checkbox"
             checked={voiceOn}
             onChange={(e) => setVoiceOn(e.target.checked)}
+            className="accent-cyan-300"
           />
           Voice on
         </label>
-      </div>
+      }
+    >
+      <SectionLabel>
+        Step {stepIndex + 1} / {exp.steps.length} · {step.id}
+      </SectionLabel>
 
-      <div className="bg-white rounded-2xl shadow p-5 space-y-2">
-        <h3 className="font-semibold">Instruction</h3>
-        <p className="text-slate-800">{step.instruction}</p>
+      <Panel className="space-y-2">
+        <h3 className="text-sm font-bold uppercase text-white/60">Instruction</h3>
+        <p className="text-lg text-white">{step.instruction}</p>
         {!step.checkpoint && (
-          <p className="text-xs text-amber-700">
-            (No checkpoint defined for this step — skip verify and continue.)
+          <p className="text-xs uppercase text-amber-200">
+            No checkpoint for this step — skip verify and continue.
           </p>
         )}
-      </div>
+      </Panel>
 
-      <div className="bg-black rounded-2xl overflow-hidden aspect-video grid place-items-center">
+      <div className="grid place-items-center overflow-hidden border border-white/10 bg-black aspect-video">
         {camState.state === "ready" ? (
           <video
             ref={videoRef}
             playsInline
             muted
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         ) : camState.state === "error" ? (
-          <div className="text-red-200 text-sm p-4 text-center">
+          <div className="p-4 text-center text-sm text-red-200">
             Camera unavailable: {camState.error}
           </div>
         ) : (
-          <div className="text-slate-300 text-sm">Requesting camera…</div>
+          <div className="text-sm text-white/50">Requesting camera…</div>
         )}
         <canvas ref={canvasRef} className="hidden" />
       </div>
@@ -206,76 +220,45 @@ export default function RealLabGuide({ experimentId, onBack }) {
           role="status"
           aria-live="polite"
           className={
-            "rounded-2xl p-5 border " +
+            "border p-5 " +
             (result.passed
-              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-              : "bg-amber-50 border-amber-200 text-amber-900")
+              ? "border-emerald-300/50 bg-emerald-500/10 text-emerald-100"
+              : "border-amber-300/50 bg-amber-500/10 text-amber-100")
           }
         >
-          <div className="font-semibold mb-1">
+          <div className="font-bold uppercase tracking-wide">
             {result.passed ? "Looks good." : "Not quite yet."}
           </div>
-          <div className="text-sm">{result.observations}</div>
+          <div className="mt-1 text-sm">{result.observations}</div>
           {!result.passed && result.hint && (
-            <div className="text-sm mt-2">Hint: {result.hint}</div>
+            <div className="mt-2 text-sm">Hint: {result.hint}</div>
           )}
         </div>
       )}
 
       {error && <ErrorCard title="Verification error" detail={error} />}
 
-      <div className="flex flex-wrap gap-2 justify-between">
-        <button
-          type="button"
-          onClick={back}
-          disabled={stepIndex === 0}
-          className="px-4 py-2 rounded-lg border border-slate-300 disabled:opacity-50"
-        >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <SecondaryButton onClick={back} disabled={stepIndex === 0}>
           ← Previous
-        </button>
-        <div className="flex gap-2">
-          <button
-            type="button"
+        </SecondaryButton>
+        <div className="flex flex-wrap gap-3">
+          <SecondaryButton
             onClick={onVerify}
             disabled={verifying || !step.checkpoint}
-            className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium disabled:opacity-50 hover:bg-indigo-700"
           >
             {verifying ? "Verifying…" : "Verify checkpoint"}
-          </button>
-          <button
-            type="button"
+          </SecondaryButton>
+          <PrimaryButton
             onClick={advance}
             disabled={stepIndex >= exp.steps.length - 1}
-            className={
-              "px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50 " +
-              (result?.passed
-                ? "bg-emerald-600 hover:bg-emerald-700"
-                : "bg-slate-600 hover:bg-slate-700")
-            }
+            className={result?.passed ? "border-emerald-300 bg-emerald-300" : ""}
           >
             Next →
-          </button>
+          </PrimaryButton>
         </div>
       </div>
-    </Shell>
-  );
-}
-
-function Shell({ title, onBack, children }) {
-  return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-10">
-      <div className="max-w-3xl mx-auto space-y-5">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-sm text-indigo-700 hover:underline"
-        >
-          ← All experiments
-        </button>
-        <h1 className="text-2xl md:text-3xl font-bold">{title}</h1>
-        {children}
-      </div>
-    </main>
+    </PageShell>
   );
 }
 
@@ -285,16 +268,4 @@ async function speak(text) {
   const audio = new Audio(url);
   audio.addEventListener("ended", () => URL.revokeObjectURL(url));
   await audio.play();
-}
-
-function ErrorCard({ title, detail }) {
-  return (
-    <div
-      role="alert"
-      className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800"
-    >
-      <div className="font-semibold">{title}</div>
-      <div className="text-sm mt-1 break-words">{detail}</div>
-    </div>
-  );
 }

@@ -1,0 +1,47 @@
+# Supabase project configuration for AI Lab Companion.
+# Docs: https://supabase.com/docs/guides/cli/config
+project_id = "ai-lab-companion"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+# No accounts/login in the app itself — the anon key only grants public read of
+# the experiments table via RLS. Auth stays available for future use.
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173"]
+
+# ---- Edge Functions ----
+# These are the key-holding proxy. They run server-side with the Featherless and
+# ElevenLabs secrets, so no API key ever reaches the browser. verify_jwt = false
+# keeps them callable from the no-login frontend (the anon key is still required
+# by the gateway).
+
+[functions.health]
+verify_jwt = false
+
+[functions.tutor-chat]
+verify_jwt = false
+
+[functions.tutor-transition]
+verify_jwt = false
+
+[functions.vision-checkpoint]
+verify_jwt = false
+
+[functions.tts]
+verify_jwt = false

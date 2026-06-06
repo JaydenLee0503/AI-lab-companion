@@ -1,5 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getExperiment, ttsAudioUrl, tutorChat } from "./api";
+import {
+  ErrorCard,
+  Panel,
+  PageShell,
+  PrimaryButton,
+  SecondaryButton,
+  SectionLabel,
+} from "./ui";
 
 const READY_TAG = "[READY_FOR_NEXT_STEP]";
 
@@ -51,15 +59,15 @@ export default function SimulationLab({ experimentId, onBack }) {
 
   if (loadError) {
     return (
-      <PageShell onBack={onBack} title="Simulation Lab">
+      <PageShell title="Simulation Lab" onBack={onBack} backLabel="Experiments">
         <ErrorCard title="Could not load experiment" detail={loadError} />
       </PageShell>
     );
   }
   if (!exp || !step) {
     return (
-      <PageShell onBack={onBack} title="Simulation Lab">
-        <p className="text-slate-500">Loading…</p>
+      <PageShell title="Simulation Lab" onBack={onBack} backLabel="Experiments">
+        <p className="text-white/60">Loading…</p>
       </PageShell>
     );
   }
@@ -89,35 +97,35 @@ export default function SimulationLab({ experimentId, onBack }) {
   const tutorSaysReady = history.some((m) => m.role === "assistant" && m.ready);
 
   return (
-    <PageShell onBack={onBack} title={`Simulation Lab — ${exp.title}`}>
+    <PageShell
+      kicker="Socratic Tutor"
+      title={exp.title}
+      onBack={onBack}
+      backLabel="Experiments"
+      right={<VoiceToggle on={voiceOn} setOn={setVoiceOn} />}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="text-sm text-slate-600">
-          Step {stepIndex + 1} of {exp.steps.length}: <strong>{step.id}</strong>
-        </div>
-        <VoiceToggle on={voiceOn} setOn={setVoiceOn} />
+        <SectionLabel>
+          Step {stepIndex + 1} / {exp.steps.length} · {step.id}
+        </SectionLabel>
       </div>
 
-      <div className="bg-white rounded-2xl shadow p-5 space-y-2">
-        <h3 className="font-semibold">Instruction</h3>
-        <p className="text-slate-800">{step.instruction}</p>
+      <Panel className="space-y-2">
+        <h3 className="text-sm font-bold uppercase text-white/60">Instruction</h3>
+        <p className="text-lg text-white">{step.instruction}</p>
         {step.simulation && (
-          <p className="text-slate-600 italic text-sm">
+          <p className="text-sm italic text-white/55">
             You observe: {step.simulation.observation}
           </p>
         )}
-      </div>
+      </Panel>
 
-      <section
-        aria-label="Tutor conversation"
-        className="bg-white rounded-2xl shadow p-5 space-y-3"
-      >
+      <Panel aria-label="Tutor conversation" className="space-y-4">
         <div className="space-y-3" aria-live="polite">
           {history.map((m, i) => (
             <Bubble key={i} role={m.role} content={m.content} ready={m.ready} />
           ))}
-          {thinking && (
-            <Bubble role="assistant" content="…" />
-          )}
+          {thinking && <Bubble role="assistant" content="…" />}
         </div>
         {error && <ErrorCard title="Tutor error" detail={error} />}
         <div className="flex gap-2">
@@ -132,61 +140,34 @@ export default function SimulationLab({ experimentId, onBack }) {
               if (e.key === "Enter") send();
             }}
             placeholder="Ask a question or share what you think…"
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            className="flex-1 border border-white/20 bg-black px-3 py-2 text-white placeholder-white/40 focus:border-cyan-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
           />
-          <button
-            type="button"
+          <PrimaryButton
             onClick={send}
             disabled={thinking || !input.trim()}
-            className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium disabled:opacity-50 hover:bg-indigo-700"
+            className="px-5"
           >
             Send
-          </button>
+          </PrimaryButton>
         </div>
-      </section>
+      </Panel>
 
-      <div className="flex flex-wrap gap-2 justify-between">
-        <button
-          type="button"
+      <div className="flex flex-wrap justify-between gap-3">
+        <SecondaryButton
           onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
           disabled={stepIndex === 0}
-          className="px-4 py-2 rounded-lg border border-slate-300 disabled:opacity-50"
         >
           ← Previous step
-        </button>
-        <button
-          type="button"
+        </SecondaryButton>
+        <PrimaryButton
           onClick={() => setStepIndex((i) => Math.min(exp.steps.length - 1, i + 1))}
           disabled={!canAdvance}
-          className={
-            "px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50 " +
-            (tutorSaysReady ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-600 hover:bg-slate-700")
-          }
+          className={tutorSaysReady ? "border-emerald-300 bg-emerald-300" : ""}
         >
           Next step →
-        </button>
+        </PrimaryButton>
       </div>
     </PageShell>
-  );
-}
-
-function PageShell({ title, onBack, children }) {
-  return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 p-6 md:p-10">
-      <div className="max-w-3xl mx-auto space-y-5">
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={onBack}
-            className="text-sm text-indigo-700 hover:underline"
-          >
-            ← All experiments
-          </button>
-        </div>
-        <h1 className="text-2xl md:text-3xl font-bold">{title}</h1>
-        {children}
-      </div>
-    </main>
   );
 }
 
@@ -196,15 +177,17 @@ function Bubble({ role, content, ready }) {
     <div className={mine ? "text-right" : "text-left"}>
       <div
         className={
-          "inline-block max-w-[85%] rounded-2xl px-4 py-2 " +
+          "inline-block max-w-[85%] px-4 py-2 text-sm leading-6 " +
           (mine
-            ? "bg-indigo-600 text-white"
-            : "bg-slate-100 text-slate-900")
+            ? "border border-white bg-white text-black"
+            : "border border-white/15 bg-neutral-900 text-white")
         }
       >
         <span className="whitespace-pre-wrap">{content}</span>
         {ready && (
-          <span className="ml-2 text-xs text-emerald-700">(ready to advance)</span>
+          <span className="ml-2 text-xs font-bold uppercase text-emerald-300">
+            ready to advance
+          </span>
         )}
       </div>
     </div>
@@ -213,13 +196,14 @@ function Bubble({ role, content, ready }) {
 
 function VoiceToggle({ on, setOn }) {
   return (
-    <label className="inline-flex items-center gap-2 text-sm">
+    <label className="inline-flex items-center gap-2 text-xs font-bold uppercase text-white/70">
       <input
         type="checkbox"
         checked={on}
         onChange={(e) => setOn(e.target.checked)}
+        className="accent-cyan-300"
       />
-      Speak tutor replies
+      Speak replies
     </label>
   );
 }
@@ -234,16 +218,4 @@ async function speak(text) {
 
 function stripReadyTag(s) {
   return s.replaceAll(READY_TAG, "").trim();
-}
-
-function ErrorCard({ title, detail }) {
-  return (
-    <div
-      role="alert"
-      className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800"
-    >
-      <div className="font-semibold">{title}</div>
-      <div className="text-sm mt-1 break-words">{detail}</div>
-    </div>
-  );
 }
