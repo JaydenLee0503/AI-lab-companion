@@ -1,4 +1,4 @@
-// Data layer for the AI Lab Companion frontend (Supabase backend).
+// Data layer for the NovaMind AI frontend (Supabase backend).
 //
 // Experiments are read directly from the public `experiments` table (anon key +
 // RLS). AI/voice calls go to Supabase Edge Functions, which hold the Featherless

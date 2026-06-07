@@ -2,16 +2,9 @@ import { Panel, PageShell, SectionLabel } from "./ui";
 
 const DOWNLOAD_URL = "/focus-guard-extension.zip";
 
-const downloadButtonClass =
-  "inline-flex min-h-11 items-center justify-center border-2 border-white bg-white px-6 text-sm font-bold uppercase text-black transition hover:bg-transparent hover:text-white focus-visible:ring-2 focus-visible:ring-cyan-200";
-
 function DownloadButton({ children }) {
   return (
-    <a
-      href={DOWNLOAD_URL}
-      download
-      className={downloadButtonClass}
-    >
+    <a href={DOWNLOAD_URL} download className="btn solid">
       {children}
     </a>
   );
@@ -46,10 +39,20 @@ export default function ExtensionPage({ onBack }) {
       backLabel="Experiments"
       right={<DownloadButton>Download .zip</DownloadButton>}
     >
-      <div className="grid gap-px overflow-hidden border border-white/10 bg-white/10 md:grid-cols-2">
-        <article className="bg-black p-6">
+      <div className="exp-grid">
+        <article className="exp-card">
           <SectionLabel>What it does</SectionLabel>
-          <ul className="mt-4 space-y-3 text-sm leading-6 text-white/75">
+          <ul
+            style={{
+              marginTop: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              color: "var(--silver)",
+              fontWeight: 300,
+              fontSize: 15,
+            }}
+          >
             <li>Detects when the active tab is a distracting site.</li>
             <li>Fires a local Chrome notification to nudge you back.</li>
             <li>Fully configurable block list via the Options page.</li>
@@ -59,19 +62,23 @@ export default function ExtensionPage({ onBack }) {
             </li>
           </ul>
         </article>
-        <article className="bg-black p-6">
+        <article className="exp-card">
           <SectionLabel accent="amber">Default watched sites</SectionLabel>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div
+            style={{
+              marginTop: 16,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
             {defaultSites.map((s) => (
-              <span
-                key={s}
-                className="border border-white/15 px-2 py-1 text-xs font-bold uppercase text-white/70"
-              >
+              <span key={s} className="chip">
                 {s}
               </span>
             ))}
           </div>
-          <p className="mt-4 text-xs leading-5 text-white/50">
+          <p style={{ marginTop: 16, fontSize: 13, color: "var(--muted)" }}>
             Edit, add, or remove any of these from the extension's Options page.
           </p>
         </article>
@@ -79,25 +86,31 @@ export default function ExtensionPage({ onBack }) {
 
       <Panel>
         <SectionLabel>Install (Chrome / Edge)</SectionLabel>
-        <ol className="mt-4 grid gap-3 sm:grid-cols-2">
+        <ol className="steps" style={{ marginTop: 16 }}>
           {steps.map((step, i) => (
-            <li
-              key={step}
-              className="border border-white/10 bg-neutral-950 p-4"
-            >
-              <span className="text-sm font-black text-white/40">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <p className="mt-2 text-sm leading-6 text-white/80">{step}</p>
+            <li key={step} className="step-cell">
+              <span className="num">{String(i + 1).padStart(2, "0")}</span>
+              <p
+                style={{
+                  marginTop: 10,
+                  fontFamily: "var(--sans)",
+                  fontSize: 14,
+                  fontWeight: 300,
+                  color: "var(--silver)",
+                  lineHeight: 1.55,
+                }}
+              >
+                {step}
+              </p>
             </li>
           ))}
         </ol>
-        <div className="mt-6">
+        <div style={{ marginTop: 24 }}>
           <DownloadButton>Download Focus Guard</DownloadButton>
         </div>
-        <p className="mt-3 text-xs text-white/50">
+        <p style={{ marginTop: 12, fontSize: 13, color: "var(--muted)" }}>
           Prefer source? The unpacked extension also lives in the repo at{" "}
-          <code className="text-white/70">chrome-extension/</code>.
+          <code style={{ color: "var(--silver)" }}>chrome-extension/</code>.
         </p>
       </Panel>
     </PageShell>

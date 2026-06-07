@@ -172,12 +172,11 @@ export default function RealLabGuide({ experimentId, onBack }) {
       onBack={onBack}
       backLabel="Experiments"
       right={
-        <label className="inline-flex items-center gap-2 text-xs font-bold uppercase text-white/70">
+        <label className="toggle">
           <input
             type="checkbox"
             checked={voiceOn}
             onChange={(e) => setVoiceOn(e.target.checked)}
-            className="accent-cyan-300"
           />
           Voice on
         </label>
@@ -187,62 +186,73 @@ export default function RealLabGuide({ experimentId, onBack }) {
         Step {stepIndex + 1} / {exp.steps.length} · {step.id}
       </SectionLabel>
 
-      <Panel className="space-y-2">
-        <h3 className="text-sm font-bold uppercase text-white/60">Instruction</h3>
-        <p className="text-lg text-white">{step.instruction}</p>
+      <Panel>
+        <h3 className="deck-label">Instruction</h3>
+        <p style={{ marginTop: 12, fontSize: 18, color: "var(--text)" }}>
+          {step.instruction}
+        </p>
         {!step.checkpoint && (
-          <p className="text-xs uppercase text-amber-200">
+          <p
+            style={{
+              marginTop: 10,
+              fontSize: 12,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--amber)",
+            }}
+          >
             No checkpoint for this step — skip verify and continue.
           </p>
         )}
       </Panel>
 
-      <div className="grid place-items-center overflow-hidden border border-white/10 bg-black aspect-video">
+      <div className="cam-stage">
         {camState.state === "ready" ? (
-          <video
-            ref={videoRef}
-            playsInline
-            muted
-            className="h-full w-full object-cover"
-          />
+          <video ref={videoRef} playsInline muted />
         ) : camState.state === "error" ? (
-          <div className="p-4 text-center text-sm text-red-200">
+          <div
+            className="cam-hint"
+            style={{ padding: 16, textAlign: "center", color: "oklch(0.78 0.16 25)" }}
+          >
             Camera unavailable: {camState.error}
           </div>
         ) : (
-          <div className="text-sm text-white/50">Requesting camera…</div>
+          <div className="cam-hint">Requesting camera…</div>
         )}
-        <canvas ref={canvasRef} className="hidden" />
+        <canvas ref={canvasRef} style={{ display: "none" }} />
       </div>
 
       {result && (
         <div
           role="status"
           aria-live="polite"
-          className={
-            "border p-5 " +
-            (result.passed
-              ? "border-emerald-300/50 bg-emerald-500/10 text-emerald-100"
-              : "border-amber-300/50 bg-amber-500/10 text-amber-100")
-          }
+          className={"notice " + (result.passed ? "pass" : "warn")}
         >
-          <div className="font-bold uppercase tracking-wide">
+          <div className="n-title">
             {result.passed ? "Looks good." : "Not quite yet."}
           </div>
-          <div className="mt-1 text-sm">{result.observations}</div>
+          <div className="n-body">{result.observations}</div>
           {!result.passed && result.hint && (
-            <div className="mt-2 text-sm">Hint: {result.hint}</div>
+            <div className="n-body">Hint: {result.hint}</div>
           )}
         </div>
       )}
 
       {error && <ErrorCard title="Verification error" detail={error} />}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
         <SecondaryButton onClick={back} disabled={stepIndex === 0}>
           ← Previous
         </SecondaryButton>
-        <div className="flex flex-wrap gap-3">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
           <SecondaryButton
             onClick={onVerify}
             disabled={verifying || !step.checkpoint}
@@ -252,7 +262,7 @@ export default function RealLabGuide({ experimentId, onBack }) {
           <PrimaryButton
             onClick={advance}
             disabled={stepIndex >= exp.steps.length - 1}
-            className={result?.passed ? "border-emerald-300 bg-emerald-300" : ""}
+            className={result?.passed ? "go" : ""}
           >
             Next →
           </PrimaryButton>

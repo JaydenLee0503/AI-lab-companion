@@ -1,366 +1,724 @@
-import { useEffect, useState } from "react";
-import { getHealth } from "./api";
-import heroImage from "./assets/lab-mission-hero.png";
+import { useEffect, useRef, useState } from "react";
+import { useReveal } from "./cinematic/useReveal";
+import { useGravityGrid } from "./cinematic/useGravityGrid";
 
-const missionStats = [
-  ["2", "learning modes"],
-  ["1", "shared experiment library"],
-  ["0", "API keys in the browser"],
-];
+// NovaMind AI landing page — the cinematic "aerospace serif" concept:
+// a gravity-grid hero card, a mission statement, a floating-cards manifesto,
+// the AI Lab Supporter panels, a live Socratic-tutor transcript, the Focus
+// extension preview, and a closing call to action.
 
-const claritySignals = [
-  {
-    label: "Checkpoint review",
-    value: "Verified setup",
-    body: "Students move forward only when the bench, materials, and observations are ready.",
-  },
-  {
-    label: "Mode continuity",
-    value: "One experiment",
-    body: "The same lab can run as a hands-on activity or a guided simulation.",
-  },
-  {
-    label: "Classroom focus",
-    value: "Local guardrails",
-    body: "Voice guidance and distraction checks keep attention on the investigation.",
-  },
-];
+const BrandMark = ({ size = 22 }) => (
+  <span className="mark">
+    <svg width={size} height={size} viewBox="0 0 22 22" fill="none">
+      <circle cx="11" cy="11" r="9.2" stroke="#eef2f7" strokeWidth="1" />
+      <circle cx="11" cy="11" r="2.4" fill="#eef2f7" />
+      <ellipse
+        cx="11"
+        cy="11"
+        rx="9.2"
+        ry="3.6"
+        stroke="oklch(0.82 0.07 215)"
+        strokeWidth="0.8"
+        transform="rotate(28 11 11)"
+      />
+    </svg>
+  </span>
+);
 
-const modes = [
+const TUTOR_SCRIPT = [
+  { who: "you", text: "Why is my model overfitting?" },
   {
-    kicker: "Real Lab",
-    title: "Guide the bench like a launch sequence.",
-    body: "Voice prompts keep students hands-free while vision checkpoints confirm each setup before the next step unlocks.",
+    who: "tutor",
+    text: "Good question. What happens to your training loss compared to your validation loss over the last few epochs?",
   },
+  { who: "you", text: "Training keeps dropping, but validation flattened out." },
   {
-    kicker: "Simulation",
-    title: "Run the mission when equipment is missing.",
-    body: "The same experiment definition becomes a Socratic lab, helping students reason through predictions and observations.",
+    who: "tutor",
+    text: "So the model keeps learning the training set specifically. What is one change that would make memorising it harder?",
   },
+  { who: "you", text: "Add regularisation? Maybe dropout." },
   {
-    kicker: "Classroom",
-    title: "Built for safe, repeatable science.",
-    body: "Household materials, backend-protected credentials, and checkpoint-only image review keep the workflow practical.",
+    who: "tutor",
+    text: "Exactly. Start there, then watch whether the two curves move back toward each other.",
   },
-];
-
-const sequence = [
-  "Select an experiment",
-  "Choose real or simulated lab mode",
-  "Follow each checkpoint",
-  "Capture observations",
 ];
 
 export default function LandingPage({ onStart }) {
-  const [health, setHealth] = useState({ state: "checking" });
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const gravityRef = useRef(null);
+  const tutorRef = useRef(null);
+
+  useReveal([]);
+  useGravityGrid(gravityRef);
+  useStreamingTutor(tutorRef);
 
   useEffect(() => {
-    getHealth()
-      .then((data) => setHealth({ state: "ok", data }))
-      .catch((err) =>
-        setHealth({ state: "error", error: String(err.message || err) })
-      );
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const closeMenu = () => setMenuOpen(false);
+
   return (
-    <main className="min-h-screen bg-black text-white">
-      <section
-        id="top"
-        className="relative isolate min-h-[82svh] overflow-hidden border-b border-white/15 md:min-h-[86svh]"
-      >
-        <img
-          src={heroImage}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 -z-20 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(0,0,0,0.92)_0%,rgba(0,0,0,0.72)_34%,rgba(0,0,0,0.2)_70%),linear-gradient(0deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0)_34%)]" />
+    <div className="layer">
+      <header className={"site-header" + (scrolled ? " scrolled" : "")}>
+        <a href="#top" className="brand" onClick={closeMenu}>
+          <BrandMark />
+          NovaMind AI
+        </a>
+        <nav className="primary header-center">
+          <a href="#mission">Mission</a>
+          <a href="#supporter">Platform</a>
+          <a href="#tutor">Tutor</a>
+          <a href="#extension">Focus</a>
+        </nav>
+        <div className="header-right">
+          <button type="button" className="login" onClick={onStart}>
+            Log in
+          </button>
+          <button type="button" className="btn solid sm" onClick={onStart}>
+            Enter the Lab
+          </button>
+          <button
+            className="menu-toggle"
+            aria-label="Menu"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
+      </header>
 
-        <Nav health={health} onStart={onStart} />
+      <nav className={"mobile-menu" + (menuOpen ? " open" : "")}>
+        <a href="#top" onClick={closeMenu}>
+          Home
+        </a>
+        <a href="#mission" onClick={closeMenu}>
+          Mission
+        </a>
+        <a href="#supporter" onClick={closeMenu}>
+          Platform
+        </a>
+        <a href="#tutor" onClick={closeMenu}>
+          Tutor
+        </a>
+        <a href="#extension" onClick={closeMenu}>
+          Focus
+        </a>
+        <button
+          type="button"
+          onClick={() => {
+            closeMenu();
+            onStart();
+          }}
+        >
+          Enter the Lab
+        </button>
+      </nav>
 
-        <div className="mx-auto flex min-h-[calc(82svh-76px)] max-w-6xl items-end px-5 pb-12 pt-24 sm:px-7 md:min-h-[calc(86svh-84px)] md:pb-16">
-          <div className="max-w-2xl">
-            <p className="mb-4 text-sm font-semibold uppercase text-cyan-200">
-              Classroom science, mission-ready
-            </p>
-            <h1 className="text-5xl font-black leading-[0.95] sm:text-6xl md:text-7xl">
-              AI Lab Companion
-            </h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-white/80 sm:text-lg">
-              A cinematic command deck for science experiments: voice guidance,
-              simulation mode, and checkpoint review in one focused web app.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={onStart}
-                className="min-h-11 border-2 border-white bg-white px-6 text-sm font-bold uppercase text-black transition hover:bg-transparent hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              >
-                Browse Experiments
-              </button>
-              <a
-                href="#mission"
-                className="inline-flex min-h-11 items-center border-2 border-white px-6 text-sm font-bold uppercase text-white transition hover:bg-white hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
-              >
-                See Mission
-              </a>
+      <main id="top">
+        {/* ============ HERO ============ */}
+        <section className="hero2">
+          <div className="hero-card">
+            <canvas id="gravity" ref={gravityRef} />
+            <div className="hero-card-overlay" />
+            <div className="hero-cats" aria-hidden="true">
+              <span>Real Lab Guide</span>
+              <span>Socratic Tutoring</span>
+              <span>Focus Guardian</span>
+              <span>Experiment Library</span>
+            </div>
+            <div className="hero-card-content">
+              <h1 className="reveal">
+                Run the experiment.
+                <br />
+                <span className="em">Understand it.</span>
+              </h1>
+              <div className="hero-card-actions reveal d1">
+                <button type="button" className="btn solid" onClick={onStart}>
+                  Get Started <span className="chev">›</span>
+                </button>
+                <a href="#supporter" className="btn outline">
+                  Learn More <span className="chev">›</span>
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section
-        id="mission"
-        className="border-b border-white/10 bg-neutral-950 px-5 py-8 sm:px-7"
-      >
-        <div className="mx-auto grid max-w-6xl gap-4 sm:grid-cols-3">
-          {missionStats.map(([value, label]) => (
-            <Stat key={label} value={value} label={label} />
-          ))}
-        </div>
-      </section>
-
-      <section
-        id="outcomes"
-        className="border-b border-neutral-200 bg-white px-5 py-16 text-black sm:px-7 md:py-24"
-      >
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase text-neutral-600">
-              Learning outcomes
+        {/* ============ MISSION ============ */}
+        <section className="section mission" id="mission">
+          <div className="wrap">
+            <div className="eyebrow center reveal">Mission</div>
+            <p className="statement reveal d1">
+              NovaMind&nbsp;AI is built for students and curious
+              builders{" "}
+              <span className="dim">
+                who want to turn a hands-on experiment into real understanding.
+              </span>
             </p>
-            <h2 className="mt-4 text-4xl font-black leading-[1.02] sm:text-5xl md:text-6xl">
-              Science labs are not just about finishing steps.
-              <span className="block">They are about understanding.</span>
-            </h2>
-            <div className="mt-8 max-w-2xl space-y-5 text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8">
-              <p>
-                AI Lab Companion unifies real lab guidance, simulation
-                reasoning, and checkpoint review in one focused classroom
-                workflow.
+          </div>
+        </section>
+
+        {/* ============ MANIFESTO ============ */}
+        <section className="section manifesto" id="manifesto">
+          <div className="manifesto-stage">
+            <div className="float-card tile tile-a" aria-hidden="true">
+              <svg
+                viewBox="0 0 26 26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3.5" y="3.5" width="19" height="19" rx="4" />
+                <path d="M3.5 10h19M10 10v12.5" />
+              </svg>
+            </div>
+            <div className="float-card tile tile-b" aria-hidden="true">
+              <svg
+                viewBox="0 0 26 26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4 21V11M10 21V5M16 21v-7M22 21V8" />
+              </svg>
+            </div>
+            <div className="float-card tile tile-c" aria-hidden="true">
+              <svg
+                viewBox="0 0 26 26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="13" cy="13" r="9.5" />
+                <path d="M3.5 13h19M13 3.5c3 3 3 16 0 19M13 3.5c-3 3-3 16 0 19" />
+              </svg>
+            </div>
+            <div className="float-card tile tile-d" aria-hidden="true">
+              <svg
+                viewBox="0 0 26 26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M18 4h2.5A1.5 1.5 0 0 1 22 5.5V8M22 18v2.5a1.5 1.5 0 0 1-1.5 1.5H18M8 22H5.5A1.5 1.5 0 0 1 4 20.5V18" />
+                <circle cx="13" cy="13" r="3" />
+              </svg>
+            </div>
+
+            <div className="float-card card-researcher" aria-hidden="true">
+              <div className="fc-date">Jun 2026</div>
+              <div className="fc-metrics">
+                <div className="m-row">
+                  <span className="sq sq-blue" />
+                  <span className="m-label">Experiments</span>
+                  <span className="m-val">128</span>
+                </div>
+                <div className="m-row">
+                  <span className="sq sq-violet" />
+                  <span className="m-label">Checkpoints</span>
+                  <span className="m-val">1.2K</span>
+                </div>
+                <div className="m-row">
+                  <span className="sq sq-cyan" />
+                  <span className="m-label">Insights</span>
+                  <span className="m-val">312</span>
+                </div>
+              </div>
+              <div className="fc-divider" />
+              <div className="fc-name">Danielle Wilson</div>
+              <div className="fc-email">Grade 10 · Physics</div>
+              <div className="fc-divider" />
+              <div className="fc-meta">
+                <div className="meta-row">
+                  <span>Lab time</span>
+                  <span>412 hrs</span>
+                </div>
+                <div className="meta-row">
+                  <span>Mode</span>
+                  <span>Real + Sim</span>
+                </div>
+                <div className="meta-row">
+                  <span>Member</span>
+                  <span>2y 10m</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="float-card card-funnel" aria-hidden="true">
+              <div className="funnel-stages">
+                <div className="stage">
+                  <div className="st-top">
+                    <span className="dot d-blue" />
+                    Steps
+                  </div>
+                  <span className="st-val">7.2K</span>
+                </div>
+                <div className="stage">
+                  <div className="st-top">
+                    <span className="dot d-violet" />
+                    Verified
+                  </div>
+                  <span className="st-val">165</span>
+                </div>
+                <div className="stage">
+                  <div className="st-top">
+                    <span className="dot d-cyan" />
+                    Mastered
+                  </div>
+                  <span className="st-val">21</span>
+                </div>
+              </div>
+              <div className="funnel-chart">
+                <svg viewBox="0 0 326 150" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="funnelGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0" stopColor="oklch(0.6 0.16 262)" />
+                      <stop offset="0.55" stopColor="oklch(0.58 0.18 300)" />
+                      <stop offset="1" stopColor="oklch(0.78 0.12 195)" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M0,22 C 80,22 100,58 163,66 C 240,76 290,86 326,92 L 326,126 C 290,120 240,108 163,98 C 100,90 80,128 0,150 Z"
+                    fill="url(#funnelGrad)"
+                    opacity="0.92"
+                  />
+                </svg>
+                <div className="funnel-pcts">
+                  <span>100%</span>
+                  <span>36%</span>
+                  <span>1.3%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="manifesto-copy">
+              <p className="manifesto-line reveal">
+                Science isn&rsquo;t just about finishing the steps.
+                <br />
+                It&rsquo;s about understanding.
               </p>
-              <p>
-                It is hands-free. It is visual. It is repeatable. And it adapts
-                to the equipment, time, and students in front of you.
+              <p className="manifesto-line reveal d1">
+                NovaMind&nbsp;AI unifies hands-on lab guidance&nbsp;
+                <span className="gi gi-blue">
+                  <svg
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  >
+                    <path d="M2.5 9.5V6M6 9.5V2.5M9.5 9.5V5" />
+                  </svg>
+                </span>{" "}
+                Socratic tutoring&nbsp;
+                <span className="gi gi-cyan">
+                  <svg viewBox="0 0 12 12" fill="#fff">
+                    <path d="M6 1.4l1.1 2.6 2.8.2-2.1 1.8.7 2.7L6 7.2 3.5 8.7l.7-2.7L2.1 4.2l2.8-.2z" />
+                  </svg>
+                </span>{" "}
+                and deep focus&nbsp;
+                <span className="gi gi-violet">
+                  <svg viewBox="0 0 12 12" fill="#fff">
+                    <circle cx="6" cy="3" r="1.5" />
+                    <circle cx="3" cy="8.5" r="1.5" />
+                    <circle cx="9" cy="8.5" r="1.5" />
+                  </svg>
+                </span>{" "}
+                — in one place.
               </p>
-              <p className="font-bold text-black">
+              <p className="manifesto-line reveal d1">
+                It&rsquo;s hands-free. It&rsquo;s visual. It&rsquo;s safe. And it
+                adapts to the equipment in front of you.
+              </p>
+              <p className="manifesto-line dim reveal d2">
                 Because students deserve more than a completed worksheet. They
                 deserve evidence they can explain.
               </p>
             </div>
           </div>
+        </section>
 
-          <div className="border border-neutral-200 bg-neutral-50 p-3">
-            <div className="border border-neutral-200 bg-white p-5">
-              <div className="flex items-center justify-between gap-4 border-b border-neutral-200 pb-4">
-                <div>
-                  <p className="text-xs font-bold uppercase text-neutral-500">
-                    Clarity report
-                  </p>
-                  <h3 className="mt-1 text-2xl font-black leading-tight">
-                    Lab progress, translated into evidence.
-                  </h3>
+        {/* ============ AI LAB SUPPORTER ============ */}
+        <section className="section" id="supporter">
+          <div className="wrap">
+            <div className="sec-head reveal">
+              <div className="eyebrow">AI Lab Supporter</div>
+              <h2>A co-pilot for the whole experiment.</h2>
+              <p>
+                From the first instruction to the final observation — guide the
+                bench by voice, verify each setup, and keep momentum through
+                every checkpoint.
+              </p>
+            </div>
+            <div className="panels reveal d1">
+              {[
+                [
+                  "01",
+                  "Guide by voice",
+                  "Hands-free, step-by-step narration walks students through a physical experiment so their hands stay on the bench.",
+                ],
+                [
+                  "02",
+                  "Verify with vision",
+                  "At each checkpoint a single webcam frame is checked by a vision model to confirm the setup is correct and safe.",
+                ],
+                [
+                  "03",
+                  "Simulate anything",
+                  "No equipment? The same experiment runs as a Socratic simulation that reasons through predictions and observations.",
+                ],
+                [
+                  "04",
+                  "Stay on mission",
+                  "Local focus alerts and a small, solid experiment library keep attention on the investigation, not the tabs.",
+                ],
+              ].map(([idx, title, body]) => (
+                <div className="panel" key={idx}>
+                  <div className="glow" />
+                  <div className="idx">{idx}</div>
+                  <h3>{title}</h3>
+                  <p>{body}</p>
                 </div>
-                <span className="shrink-0 border border-emerald-500 px-3 py-1 text-xs font-black uppercase text-emerald-700">
-                  Live
-                </span>
-              </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-              <div className="mt-4 grid gap-3">
-                {claritySignals.map((signal) => (
-                  <article
-                    key={signal.label}
-                    className="border border-neutral-200 bg-neutral-50 p-4"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <p className="text-xs font-bold uppercase text-neutral-500">
-                        {signal.label}
-                      </p>
-                      <span className="text-right text-sm font-black text-black">
-                        {signal.value}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-neutral-700">
-                      {signal.body}
-                    </p>
-                  </article>
-                ))}
+        {/* ============ SOCRATIC TUTOR ============ */}
+        <section className="section tutor" id="tutor">
+          <div className="wrap">
+            <div className="tutor-grid">
+              <div className="reveal">
+                <div className="eyebrow">Socratic Tutor</div>
+                <h2
+                  className="serif"
+                  style={{
+                    fontSize: "clamp(32px,4.6vw,64px)",
+                    lineHeight: 1.05,
+                    letterSpacing: "-0.02em",
+                    margin: "22px 0",
+                  }}
+                >
+                  Answers you arrive at, not answers you&rsquo;re handed.
+                </h2>
+                <p
+                  style={{
+                    color: "var(--silver)",
+                    fontWeight: 300,
+                    fontSize: "clamp(15px,1.4vw,18px)",
+                    maxWidth: 520,
+                  }}
+                >
+                  The Tutor asks guiding questions instead of handing over
+                  solutions. It moves at the pace of your understanding — calm,
+                  precise, and genuinely curious — so the insight stays yours.
+                </p>
+              </div>
+              <div className="dialogue reveal d1" ref={tutorRef}>
+                <div className="bubble you">
+                  <div className="who">You</div>
+                  Why is my model overfitting?
+                </div>
+                <div className="bubble tutor-msg">
+                  <div className="who">Tutor</div>
+                  <em>Good question.</em> What happens to your training loss
+                  compared to your validation loss over the last few epochs?
+                </div>
+                <div className="bubble you">
+                  <div className="who">You</div>
+                  Training keeps dropping, validation flattened.
+                </div>
+                <div className="bubble tutor-msg">
+                  <div className="who">Tutor</div>
+                  So the model keeps learning the training set specifically.
+                  What&rsquo;s one thing you could change that would make that
+                  harder to do?
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="modes" className="bg-black px-5 py-16 sm:px-7 md:py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase text-amber-200">
-              Mission profile
-            </p>
-            <h2 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">
-              Make every experiment feel deliberate, visual, and ready to run.
+        {/* ============ FOCUS EXTENSION ============ */}
+        <section className="section" id="extension">
+          <div className="wrap">
+            <div className="ext-grid">
+              <div className="reveal">
+                <div className="eyebrow">Focus &middot; Chrome Extension</div>
+                <h2
+                  className="serif"
+                  style={{
+                    fontSize: "clamp(32px,4.6vw,64px)",
+                    lineHeight: 1.05,
+                    letterSpacing: "-0.02em",
+                    margin: "22px 0",
+                  }}
+                >
+                  Guard your attention, locally.
+                </h2>
+                <p
+                  style={{
+                    color: "var(--silver)",
+                    fontWeight: 300,
+                    fontSize: "clamp(15px,1.4vw,18px)",
+                    maxWidth: 520,
+                  }}
+                >
+                  Focus Guard watches only the URL of your active tab and gives
+                  you a quiet nudge when you drift to a distracting site —
+                  YouTube, Instagram, Discord, TikTok, Reddit. Everything runs on
+                  your machine.
+                </p>
+                <ul className="privacy-list">
+                  <li>
+                    <svg className="tick" viewBox="0 0 18 18" fill="none">
+                      <path
+                        d="M3 9.5l4 4 8-9"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <span>
+                      <span className="label">Reads active tab URL only</span> —
+                      to detect distracting domains
+                    </span>
+                  </li>
+                  <li>
+                    <svg className="tick x" viewBox="0 0 18 18" fill="none">
+                      <path
+                        d="M4.5 4.5l9 9M13.5 4.5l-9 9"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span>No page content, ever</span>
+                  </li>
+                  <li>
+                    <svg className="tick x" viewBox="0 0 18 18" fill="none">
+                      <path
+                        d="M4.5 4.5l9 9M13.5 4.5l-9 9"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span>No passwords or private messages</span>
+                  </li>
+                  <li>
+                    <svg className="tick x" viewBox="0 0 18 18" fill="none">
+                      <path
+                        d="M4.5 4.5l9 9M13.5 4.5l-9 9"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span>No personal data collected or sent</span>
+                  </li>
+                </ul>
+                <button type="button" className="btn solid" onClick={onStart}>
+                  Get Focus Guard <span className="arrow">↓</span>
+                </button>
+              </div>
+              <div className="ext-visual reveal d1">
+                <div className="browser-bar">
+                  <span className="dot" />
+                  <span className="dot" />
+                  <span className="dot" />
+                  <span className="url">youtube.com/watch?v=…</span>
+                </div>
+                <div className="ext-body">
+                  <div className="alert">
+                    <span className="pulse" />
+                    <div>
+                      <div className="a-title">Distraction detected</div>
+                      <div className="a-sub">
+                        You&rsquo;re 14 minutes into a lab on “Density &amp;
+                        buoyancy”. Return to the bench?
+                      </div>
+                    </div>
+                  </div>
+                  <div className="ext-tags">
+                    <span>youtube.com</span>
+                    <span>instagram.com</span>
+                    <span>discord.com</span>
+                    <span>tiktok.com</span>
+                    <span>reddit.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ FINAL CTA ============ */}
+        <section className="section final" id="final">
+          <div className="wrap">
+            <div className="eyebrow center reveal">Begin</div>
+            <h2 className="big reveal d1">
+              Open the experiment library
+              <br />
+              and choose your mode.
             </h2>
+            <div
+              className="reveal d2"
+              style={{
+                display: "flex",
+                gap: 16,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <button type="button" className="btn solid" onClick={onStart}>
+                Enter the Lab <span className="arrow">→</span>
+              </button>
+              <a href="#supporter" className="btn">
+                See what&rsquo;s inside
+              </a>
+            </div>
           </div>
+        </section>
+      </main>
 
-          <div className="mt-10 grid gap-px overflow-hidden border border-white/10 bg-white/10 md:grid-cols-3">
-            {modes.map((mode) => (
-              <ModePanel key={mode.kicker} {...mode} />
-            ))}
-          </div>
+      <footer className="site-footer">
+        <div className="brand" style={{ fontSize: 13 }}>
+          <BrandMark size={18} />
+          NovaMind AI
         </div>
-      </section>
-
-      <section
-        id="sequence"
-        className="bg-white px-5 py-16 text-black sm:px-7 md:py-20"
-      >
-        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
-          <div>
-            <p className="text-sm font-semibold uppercase text-neutral-600">
-              Lab sequence
-            </p>
-            <h2 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">
-              From first click to final observation.
-            </h2>
-            <p className="mt-4 max-w-md text-base leading-7 text-neutral-700">
-              Students move through a clear set of stages, with the app adapting
-              to either a physical lab bench or a simulated investigation.
-            </p>
-          </div>
-
-          <ol className="grid gap-3 sm:grid-cols-2">
-            {sequence.map((step, index) => (
-              <li
-                key={step}
-                className="min-h-28 border border-neutral-200 bg-neutral-50 p-5"
-              >
-                <span className="text-sm font-black text-neutral-500">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <p className="mt-5 text-xl font-black leading-tight">{step}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden bg-neutral-950 px-5 py-16 sm:px-7 md:py-20">
-        <div className="absolute inset-x-0 top-0 h-px bg-white/15" />
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase text-cyan-200">
-              Ready for launch
-            </p>
-            <h2 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">
-              Open the experiment library and choose your mode.
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onStart}
-            className="min-h-11 w-full border-2 border-white bg-white px-6 text-sm font-bold uppercase text-black transition hover:bg-transparent hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 sm:w-auto"
-          >
-            Start
+        <nav>
+          <a href="#supporter">Platform</a>
+          <a href="#tutor">Tutor</a>
+          <a href="#extension">Focus</a>
+          <button type="button" onClick={onStart}>
+            Launch
           </button>
-        </div>
-      </section>
-
-      <footer className="border-t border-white/10 bg-black px-5 py-6 text-sm text-white/55 sm:px-7">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-          <span>AI Lab Companion</span>
-          <span>Science labs for the web classroom.</span>
-        </div>
+        </nav>
+        <span>© 2026 — Science labs for the web classroom.</span>
       </footer>
-    </main>
-  );
-}
-
-function Nav({ health, onStart }) {
-  return (
-    <nav className="mx-auto flex h-[76px] max-w-6xl items-center justify-between px-5 sm:px-7 md:h-[84px]">
-      <a href="#top" className="flex items-center gap-3 font-black">
-        <span className="grid h-9 w-9 place-items-center border-2 border-white text-xs">
-          AI
-        </span>
-        <span className="hidden sm:inline">Lab Companion</span>
-      </a>
-
-      <div className="hidden items-center gap-8 text-sm font-bold uppercase text-white/85 md:flex">
-        <a href="#mission" className="hover:text-white">
-          Mission
-        </a>
-        <a href="#outcomes" className="hover:text-white">
-          Outcomes
-        </a>
-        <a href="#modes" className="hover:text-white">
-          Modes
-        </a>
-        <a href="#sequence" className="hover:text-white">
-          Sequence
-        </a>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <BackendBadge health={health} />
-        <button
-          type="button"
-          onClick={onStart}
-          className="hidden min-h-10 border border-white/80 px-4 text-xs font-bold uppercase text-white transition hover:bg-white hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 sm:inline-block"
-        >
-          Start
-        </button>
-      </div>
-    </nav>
-  );
-}
-
-function Stat({ value, label }) {
-  return (
-    <div className="border border-white/10 bg-black px-5 py-5">
-      <span className="text-4xl font-black">{value}</span>
-      <p className="mt-1 text-sm font-semibold uppercase text-white/65">
-        {label}
-      </p>
     </div>
   );
 }
 
-function ModePanel({ kicker, title, body }) {
-  return (
-    <article className="bg-black p-6">
-      <p className="text-sm font-bold uppercase text-cyan-200">{kicker}</p>
-      <h3 className="mt-4 text-2xl font-black leading-tight">{title}</h3>
-      <p className="mt-4 text-sm leading-6 text-white/68">{body}</p>
-    </article>
-  );
-}
+// Streaming Socratic-tutor transcript — types out the scripted conversation
+// once the panel scrolls into view, then loops. Falls back to the static
+// markup when motion is reduced.
+function useStreamingTutor(rootRef) {
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
 
-function BackendBadge({ health }) {
-  const baseClass =
-    "hidden border px-3 py-1 text-xs font-bold uppercase sm:inline-flex";
+    let cancelled = false;
+    let started = false;
+    const timers = new Set();
+    const wait = (ms) =>
+      new Promise((r) => {
+        const id = setTimeout(r, ms);
+        timers.add(id);
+      });
+    const el = (tag, cls, html) => {
+      const d = document.createElement(tag);
+      if (cls) d.className = cls;
+      if (html != null) d.innerHTML = html;
+      return d;
+    };
 
-  if (health.state === "checking") {
-    return (
-      <span className={`${baseClass} border-white/30 text-white/70`}>
-        backend checking
-      </span>
-    );
-  }
+    async function typeText(node, text, cps) {
+      const span = el("span", "t");
+      const caret = el("span", "caret");
+      node.appendChild(span);
+      node.appendChild(caret);
+      for (let i = 0; i < text.length && !cancelled; i++) {
+        span.textContent += text[i];
+        let d = 1000 / cps;
+        if (text[i] === " ") d += 6;
+        if (/[.,?]/.test(text[i])) d += 150;
+        await wait(d);
+      }
+      caret.remove();
+    }
 
-  if (health.state === "ok") {
-    return (
-      <span className={`${baseClass} border-emerald-300/60 text-emerald-200`}>
-        backend online
-      </span>
-    );
-  }
+    async function playTurn(turn) {
+      const b = el(
+        "div",
+        "bubble appear " + (turn.who === "tutor" ? "tutor-msg" : "you")
+      );
+      b.appendChild(el("div", "who", turn.who === "tutor" ? "Tutor" : "You"));
+      const body = el("span", "bubble-body");
+      b.appendChild(body);
+      root.appendChild(b);
+      const ti = el("span", "typing", "<i></i><i></i><i></i>");
+      body.appendChild(ti);
+      await wait(turn.who === "tutor" ? 940 : 680);
+      if (cancelled) return;
+      ti.remove();
+      await typeText(body, turn.text, turn.who === "tutor" ? 27 : 34);
+    }
 
-  return (
-    <span
-      className={`${baseClass} border-red-300/60 text-red-200`}
-      title={health.error}
-    >
-      backend offline
-    </span>
-  );
+    async function run() {
+      root.classList.add("live");
+      while (!cancelled) {
+        root.innerHTML = "";
+        for (const turn of TUTOR_SCRIPT) {
+          if (cancelled) return;
+          await playTurn(turn);
+          await wait(turn.who === "tutor" ? 850 : 520);
+        }
+        await wait(2800);
+        root.style.transition = "opacity .55s ease";
+        root.style.opacity = "0";
+        await wait(620);
+        if (cancelled) return;
+        root.style.opacity = "1";
+      }
+    }
+
+    function maybeStart() {
+      if (started || cancelled) return;
+      const r = root.getBoundingClientRect();
+      const vh = window.innerHeight || 800;
+      if (r.top < vh * 0.85 && r.bottom > 0) {
+        started = true;
+        if (io) io.disconnect();
+        run();
+      }
+    }
+
+    const io =
+      "IntersectionObserver" in window
+        ? new IntersectionObserver(
+            (es) => es.forEach((e) => e.isIntersecting && maybeStart()),
+            { threshold: 0.3 }
+          )
+        : null;
+    if (io) io.observe(root);
+    window.addEventListener("scroll", maybeStart, { passive: true });
+    maybeStart();
+
+    return () => {
+      cancelled = true;
+      if (io) io.disconnect();
+      window.removeEventListener("scroll", maybeStart);
+      timers.forEach((id) => clearTimeout(id));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 }

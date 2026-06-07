@@ -4,6 +4,7 @@ import HomePage from "./HomePage";
 import SimulationLab from "./SimulationLab";
 import RealLabGuide from "./RealLabGuide";
 import ExtensionPage from "./ExtensionPage";
+import Sky from "./cinematic/Sky";
 
 export default function App() {
   const [view, setView] = useState({ name: "landing" });
@@ -21,23 +22,24 @@ export default function App() {
     setView({ name: "extension" });
   }
 
-  if (view.name === "simulation") {
-    return <SimulationLab experimentId={view.experimentId} onBack={goHome} />;
-  }
-  if (view.name === "real-lab") {
-    return <RealLabGuide experimentId={view.experimentId} onBack={goHome} />;
-  }
-  if (view.name === "extension") {
-    return <ExtensionPage onBack={goHome} />;
-  }
-  if (view.name === "home") {
-    return (
-      <HomePage
-        onOpen={openExperiment}
-        onBack={goLanding}
-        onOpenExtension={openExtension}
-      />
-    );
-  }
-  return <LandingPage onStart={goHome} />;
+  return (
+    <>
+      <Sky />
+      {view.name === "simulation" && (
+        <SimulationLab experimentId={view.experimentId} onBack={goHome} />
+      )}
+      {view.name === "real-lab" && (
+        <RealLabGuide experimentId={view.experimentId} onBack={goHome} />
+      )}
+      {view.name === "extension" && <ExtensionPage onBack={goHome} />}
+      {view.name === "home" && (
+        <HomePage
+          onOpen={openExperiment}
+          onBack={goLanding}
+          onOpenExtension={openExtension}
+        />
+      )}
+      {view.name === "landing" && <LandingPage onStart={goHome} />}
+    </>
+  );
 }

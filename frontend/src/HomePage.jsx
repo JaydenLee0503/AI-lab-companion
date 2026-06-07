@@ -43,7 +43,7 @@ export default function HomePage({ onOpen, onBack, onOpenExtension }) {
         </div>
 
         {experiments.state === "loading" && (
-          <p className="text-white/60">Loading…</p>
+          <p style={{ color: "var(--silver)" }}>Loading…</p>
         )}
         {experiments.state === "error" && (
           <ErrorCard
@@ -52,22 +52,18 @@ export default function HomePage({ onOpen, onBack, onOpenExtension }) {
           />
         )}
         {experiments.state === "ok" && experiments.data.length === 0 && (
-          <p className="text-white/60">No experiments found.</p>
+          <p style={{ color: "var(--silver)" }}>No experiments found.</p>
         )}
         {experiments.state === "ok" && experiments.data.length > 0 && (
-          <ul className="grid gap-px overflow-hidden border border-white/10 bg-white/10 md:grid-cols-2">
+          <ul className="exp-grid">
             {experiments.data.map((e) => (
-              <li key={e.id} className="flex flex-col bg-black p-6">
-                <p className="text-xs font-bold uppercase text-white/50">
+              <li key={e.id} className="exp-card">
+                <p className="exp-meta">
                   Grades {e.grade_level} · ~{e.duration_minutes} min
                 </p>
-                <h3 className="mt-3 text-2xl font-black leading-tight">
-                  {e.title}
-                </h3>
-                <p className="mt-3 flex-1 text-sm leading-6 text-white/70">
-                  {e.summary}
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
+                <h3>{e.title}</h3>
+                <p>{e.summary}</p>
+                <div className="exp-actions">
                   <PrimaryButton onClick={() => onOpen(e.id, "real-lab")}>
                     Real Lab Guide
                   </PrimaryButton>
@@ -82,22 +78,43 @@ export default function HomePage({ onOpen, onBack, onOpenExtension }) {
       </section>
 
       <section aria-labelledby="focus-heading">
-        <Panel className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-xl">
+        <Panel
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 24,
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ maxWidth: 560 }}>
             <SectionLabel accent="amber">Stay on mission</SectionLabel>
-            <h2 id="focus-heading" className="mt-3 text-2xl font-black leading-tight">
+            <h2
+              id="focus-heading"
+              className="serif"
+              style={{
+                margin: "14px 0 0",
+                fontSize: "clamp(24px,2.6vw,32px)",
+                fontWeight: 400,
+                color: "#eef2f7",
+              }}
+            >
               Focus Guard — a Chrome extension for distraction-free labs.
             </h2>
-            <p className="mt-3 text-sm leading-6 text-white/70">
+            <p
+              style={{
+                marginTop: 12,
+                color: "var(--silver)",
+                fontWeight: 300,
+                fontSize: 15,
+              }}
+            >
               Get a local alert the moment a distracting site steals the active
               tab. Everything runs on your machine — no page content or personal
               data ever leaves the browser.
             </p>
           </div>
-          <SecondaryButton
-            onClick={onOpenExtension}
-            className="shrink-0"
-          >
+          <SecondaryButton onClick={onOpenExtension}>
             Get the extension
           </SecondaryButton>
         </Panel>

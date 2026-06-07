@@ -110,25 +110,41 @@ export default function SimulationLab({ experimentId, onBack }) {
         </SectionLabel>
       </div>
 
-      <Panel className="space-y-2">
-        <h3 className="text-sm font-bold uppercase text-white/60">Instruction</h3>
-        <p className="text-lg text-white">{step.instruction}</p>
+      <Panel>
+        <h3 className="deck-label">Instruction</h3>
+        <p style={{ marginTop: 12, fontSize: 18, color: "var(--text)" }}>
+          {step.instruction}
+        </p>
         {step.simulation && (
-          <p className="text-sm italic text-white/55">
+          <p
+            style={{
+              marginTop: 10,
+              fontStyle: "italic",
+              color: "var(--silver)",
+              fontSize: 14,
+            }}
+          >
             You observe: {step.simulation.observation}
           </p>
         )}
       </Panel>
 
-      <Panel aria-label="Tutor conversation" className="space-y-4">
-        <div className="space-y-3" aria-live="polite">
+      <Panel aria-label="Tutor conversation">
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: 12 }}
+          aria-live="polite"
+        >
           {history.map((m, i) => (
             <Bubble key={i} role={m.role} content={m.content} ready={m.ready} />
           ))}
           {thinking && <Bubble role="assistant" content="…" />}
         </div>
-        {error && <ErrorCard title="Tutor error" detail={error} />}
-        <div className="flex gap-2">
+        {error && (
+          <div style={{ marginTop: 16 }}>
+            <ErrorCard title="Tutor error" detail={error} />
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
           <label htmlFor="tutor-input" className="sr-only">
             Your reply
           </label>
@@ -140,19 +156,22 @@ export default function SimulationLab({ experimentId, onBack }) {
               if (e.key === "Enter") send();
             }}
             placeholder="Ask a question or share what you think…"
-            className="flex-1 border border-white/20 bg-black px-3 py-2 text-white placeholder-white/40 focus:border-cyan-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200"
+            className="field"
           />
-          <PrimaryButton
-            onClick={send}
-            disabled={thinking || !input.trim()}
-            className="px-5"
-          >
+          <PrimaryButton onClick={send} disabled={thinking || !input.trim()}>
             Send
           </PrimaryButton>
         </div>
       </Panel>
 
-      <div className="flex flex-wrap justify-between gap-3">
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
         <SecondaryButton
           onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
           disabled={stepIndex === 0}
@@ -162,7 +181,7 @@ export default function SimulationLab({ experimentId, onBack }) {
         <PrimaryButton
           onClick={() => setStepIndex((i) => Math.min(exp.steps.length - 1, i + 1))}
           disabled={!canAdvance}
-          className={tutorSaysReady ? "border-emerald-300 bg-emerald-300" : ""}
+          className={tutorSaysReady ? "go" : ""}
         >
           Next step →
         </PrimaryButton>
@@ -174,21 +193,10 @@ export default function SimulationLab({ experimentId, onBack }) {
 function Bubble({ role, content, ready }) {
   const mine = role === "user";
   return (
-    <div className={mine ? "text-right" : "text-left"}>
-      <div
-        className={
-          "inline-block max-w-[85%] px-4 py-2 text-sm leading-6 " +
-          (mine
-            ? "border border-white bg-white text-black"
-            : "border border-white/15 bg-neutral-900 text-white")
-        }
-      >
-        <span className="whitespace-pre-wrap">{content}</span>
-        {ready && (
-          <span className="ml-2 text-xs font-bold uppercase text-emerald-300">
-            ready to advance
-          </span>
-        )}
+    <div className={"msg " + (mine ? "me" : "bot")}>
+      <div className="body">
+        <span style={{ whiteSpace: "pre-wrap" }}>{content}</span>
+        {ready && <span className="ready-tag">ready to advance</span>}
       </div>
     </div>
   );
@@ -196,12 +204,11 @@ function Bubble({ role, content, ready }) {
 
 function VoiceToggle({ on, setOn }) {
   return (
-    <label className="inline-flex items-center gap-2 text-xs font-bold uppercase text-white/70">
+    <label className="toggle">
       <input
         type="checkbox"
         checked={on}
         onChange={(e) => setOn(e.target.checked)}
-        className="accent-cyan-300"
       />
       Speak replies
     </label>
