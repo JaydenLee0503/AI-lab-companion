@@ -8,6 +8,24 @@ const missionStats = [
   ["0", "API keys in the browser"],
 ];
 
+const claritySignals = [
+  {
+    label: "Checkpoint review",
+    value: "Verified setup",
+    body: "Students move forward only when the bench, materials, and observations are ready.",
+  },
+  {
+    label: "Mode continuity",
+    value: "One experiment",
+    body: "The same lab can run as a hands-on activity or a guided simulation.",
+  },
+  {
+    label: "Classroom focus",
+    value: "Local guardrails",
+    body: "Voice guidance and distraction checks keep attention on the investigation.",
+  },
+];
+
 const modes = [
   {
     kicker: "Real Lab",
@@ -99,6 +117,77 @@ export default function LandingPage({ onStart }) {
           {missionStats.map(([value, label]) => (
             <Stat key={label} value={value} label={label} />
           ))}
+        </div>
+      </section>
+
+      <section
+        id="outcomes"
+        className="border-b border-neutral-200 bg-white px-5 py-16 text-black sm:px-7 md:py-24"
+      >
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase text-neutral-600">
+              Learning outcomes
+            </p>
+            <h2 className="mt-4 text-4xl font-black leading-[1.02] sm:text-5xl md:text-6xl">
+              Science labs are not just about finishing steps.
+              <span className="block">They are about understanding.</span>
+            </h2>
+            <div className="mt-8 max-w-2xl space-y-5 text-base leading-7 text-neutral-700 sm:text-lg sm:leading-8">
+              <p>
+                AI Lab Companion unifies real lab guidance, simulation
+                reasoning, and checkpoint review in one focused classroom
+                workflow.
+              </p>
+              <p>
+                It is hands-free. It is visual. It is repeatable. And it adapts
+                to the equipment, time, and students in front of you.
+              </p>
+              <p className="font-bold text-black">
+                Because students deserve more than a completed worksheet. They
+                deserve evidence they can explain.
+              </p>
+            </div>
+          </div>
+
+          <div className="border border-neutral-200 bg-neutral-50 p-3">
+            <div className="border border-neutral-200 bg-white p-5">
+              <div className="flex items-center justify-between gap-4 border-b border-neutral-200 pb-4">
+                <div>
+                  <p className="text-xs font-bold uppercase text-neutral-500">
+                    Clarity report
+                  </p>
+                  <h3 className="mt-1 text-2xl font-black leading-tight">
+                    Lab progress, translated into evidence.
+                  </h3>
+                </div>
+                <span className="shrink-0 border border-emerald-500 px-3 py-1 text-xs font-black uppercase text-emerald-700">
+                  Live
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                {claritySignals.map((signal) => (
+                  <article
+                    key={signal.label}
+                    className="border border-neutral-200 bg-neutral-50 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <p className="text-xs font-bold uppercase text-neutral-500">
+                        {signal.label}
+                      </p>
+                      <span className="text-right text-sm font-black text-black">
+                        {signal.value}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-neutral-700">
+                      {signal.body}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -199,6 +288,9 @@ function Nav({ health, onStart }) {
       <div className="hidden items-center gap-8 text-sm font-bold uppercase text-white/85 md:flex">
         <a href="#mission" className="hover:text-white">
           Mission
+        </a>
+        <a href="#outcomes" className="hover:text-white">
+          Outcomes
         </a>
         <a href="#modes" className="hover:text-white">
           Modes

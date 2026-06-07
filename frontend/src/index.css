@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  button,
+  input,
+  textarea,
+  select {
+    font-family: "Canela", "Cormorant Garamond", "Times New Roman", serif;
+  }
+}

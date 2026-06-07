@@ -1,17 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "");
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 
-/** True when the app is configured to use the Supabase backend. */
-export const USE_SUPABASE = Boolean(url && anonKey);
+// Treat the .env.example placeholders (or missing values) as "not configured",
+// so the app shows a clear setup message instead of a confusing network error.
+const isPlaceholder =
+  !rawUrl ||
+  !rawKey ||
+  rawUrl.includes("YOUR-PROJECT") ||
+  rawKey === "your-anon-public-key";
 
-export const SUPABASE_URL = url;
-export const SUPABASE_ANON_KEY = anonKey;
+/** True when real Supabase credentials are present. */
+export const IS_CONFIGURED = !isPlaceholder;
 
-/**
- * The supabase-js client, or null when env vars are missing. Callers must
- * handle null and surface a friendly "not configured" message rather than
- * crashing — see api.js.
- */
-export const supabase = USE_SUPABASE ? createClient(url, anonKey) : null;
+export const SUPABASE_URL = IS_CONFIGURED ? rawUrl.replace(/\/$/, "") : undefined;
+export const SUPABASE_ANON_KEY = IS_CONFIGURED ? rawKey : undefined;
+
+/** The supabase-js client, or null when credentials are missing. */
+export const supabase = IS_CONFIGURED
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
