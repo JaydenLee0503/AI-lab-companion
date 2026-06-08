@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { getExperiment, ttsAudioUrl, tutorChat } from "./api";
+import { useEffect, useRef, useState } from "react";
+import { getExperiment, transcribeAudio, ttsAudioUrl, tutorChat } from "./api";
 import {
   ErrorCard,
   Panel,
@@ -20,6 +20,10 @@ export default function SimulationLab({ experimentId, onBack }) {
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState(null);
   const [voiceOn, setVoiceOn] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const recorderRef = useRef(null);
+  const chunksRef = useRef([]);
 
   useEffect(() => {
     setHistory([]);
@@ -72,10 +76,11 @@ export default function SimulationLab({ experimentId, onBack }) {
     );
   }
 
-  async function send() {
-    const text = input.trim();
+  async function send(textArg) {
+    // A click handler passes an event; fall back to the input box in that case.
+    const text = (typeof textArg === "string" ? textArg : input).trim();
     if (!text || thinking) return;
-    setInput("");
+    if (typeof textArg !== "string") setInput("");
     setError(null);
     const next = [...history, { role: "user", content: text }];
     setHistory(next);
@@ -90,6 +95,45 @@ export default function SimulationLab({ experimentId, onBack }) {
       setError(String(e.message || e));
     } finally {
       setThinking(false);
+    }
+  }
+
+  // Hold-to-talk: record from the mic, transcribe via Scribe, then auto-send so
+  // the student can run the whole tutor conversation hands-free.
+  async function toggleMic() {
+    if (transcribing || thinking) return;
+    if (recording) {
+      recorderRef.current?.stop();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setRecording(false);
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        if (blob.size === 0) return;
+        setTranscribing(true);
+        try {
+          const text = (await transcribeAudio(blob)).trim();
+          if (text) await send(text);
+        } catch (e) {
+          setError(String(e.message || e));
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      recorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+      setError(null);
+    } catch {
+      setError("Microphone access was denied or is unavailable.");
     }
   }
 
@@ -155,8 +199,14 @@ export default function SimulationLab({ experimentId, onBack }) {
             onKeyDown={(e) => {
               if (e.key === "Enter") send();
             }}
-            placeholder="Ask a question or share what you think…"
+            placeholder="Ask a question, or tap the mic to speak…"
             className="field"
+          />
+          <MicButton
+            recording={recording}
+            transcribing={transcribing}
+            disabled={thinking}
+            onClick={toggleMic}
           />
           <PrimaryButton onClick={send} disabled={thinking || !input.trim()}>
             Send
@@ -199,6 +249,36 @@ function Bubble({ role, content, ready }) {
         {ready && <span className="ready-tag">ready to advance</span>}
       </div>
     </div>
+  );
+}
+
+function MicButton({ recording, transcribing, disabled, onClick }) {
+  const label = transcribing
+    ? "Transcribing…"
+    : recording
+      ? "Stop recording"
+      : "Speak your reply";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled || transcribing}
+      className="field"
+      aria-label={label}
+      title={label}
+      style={{
+        flex: "0 0 auto",
+        minWidth: 52,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: disabled || transcribing ? "default" : "pointer",
+        borderColor: recording ? "#f87171" : undefined,
+        color: recording ? "#f87171" : undefined,
+      }}
+    >
+      {transcribing ? "…" : recording ? "■" : "🎤"}
+    </button>
   );
 }
 

@@ -149,3 +149,19 @@ export async function ttsAudioUrl(text, voiceId) {
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }
+
+/** Transcribes a recorded audio blob to text via ElevenLabs Scribe. */
+export async function transcribeAudio(blob) {
+  ensureConfigured();
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/stt`, {
+    method: "POST",
+    headers: {
+      "Content-Type": blob.type || "audio/webm",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: blob,
+  });
+  const data = await jsonOrThrow(res);
+  return data.text ?? "";
+}
