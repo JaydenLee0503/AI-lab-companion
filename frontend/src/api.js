@@ -165,3 +165,8 @@ export async function transcribeAudio(blob) {
   const data = await jsonOrThrow(res);
   return data.text ?? "";
 }
+
+/** Gets a signed URL for a live ElevenLabs Conversational AI tutor session. */
+export async function getTutorVoiceSession() {
+  return callFunction("tutor-voice", {});
+}

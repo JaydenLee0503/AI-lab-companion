@@ -8,6 +8,7 @@ import {
   SecondaryButton,
   SectionLabel,
 } from "./ui";
+import VoiceTutor from "./VoiceTutor";
 
 const READY_TAG = "[READY_FOR_NEXT_STEP]";
 
@@ -211,6 +212,16 @@ export default function SimulationLab({ experimentId, onBack }) {
           <PrimaryButton onClick={send} disabled={thinking || !input.trim()}>
             Send
           </PrimaryButton>
+        </div>
+      </Panel>
+
+      <Panel aria-label="Live voice tutor">
+        <h3 className="deck-label">Live voice tutor (beta)</h3>
+        <p style={{ marginTop: 8, color: "var(--silver)", fontSize: 14 }}>
+          Hold a real-time spoken conversation with the tutor about this step.
+        </p>
+        <div style={{ marginTop: 14 }}>
+          <VoiceTutor exp={exp} step={step} />
         </div>
       </Panel>
 
