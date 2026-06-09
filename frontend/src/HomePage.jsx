@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { getHealth, listExperiments } from "./api";
+import { listExperiments } from "./api";
+import { CHROME_STORE_URL } from "./extensionConfig";
 import {
   ErrorCard,
   Panel,
@@ -7,17 +8,12 @@ import {
   PrimaryButton,
   SecondaryButton,
   SectionLabel,
-  StatusBadge,
 } from "./ui";
 
-export default function HomePage({ onOpen, onBack, onOpenExtension }) {
-  const [health, setHealth] = useState({ state: "checking" });
+export default function HomePage({ onOpen, onBack, onOpenExtension, onOpenTutor }) {
   const [experiments, setExperiments] = useState({ state: "loading" });
 
   useEffect(() => {
-    getHealth()
-      .then((data) => setHealth({ state: "ok", data }))
-      .catch((err) => setHealth({ state: "error", error: String(err.message || err) }));
     listExperiments()
       .then((data) => setExperiments({ state: "ok", data }))
       .catch((err) =>
@@ -28,11 +24,10 @@ export default function HomePage({ onOpen, onBack, onOpenExtension }) {
   return (
     <PageShell
       kicker="Mission control"
-      title="Choose an experiment, then a mode."
-      subtitle="A hands-free lab assistant for students. Every experiment runs as a guided real lab or a Socratic simulation from the same definition."
+      title="Three ways in. One shared core."
+      subtitle="Run a guided real or simulated experiment, talk through any topic with the Socratic Tutor, or stay focused with Focus Guard."
       onBack={onBack}
       backLabel="Home"
-      right={<StatusBadge state={health.state} error={health.error} />}
     >
       <section aria-labelledby="experiments-heading" className="space-y-4">
         <div className="flex items-center justify-between">
@@ -77,6 +72,49 @@ export default function HomePage({ onOpen, onBack, onOpenExtension }) {
         )}
       </section>
 
+      <section aria-labelledby="tutor-heading">
+        <Panel
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 24,
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ maxWidth: 560 }}>
+            <SectionLabel>Socratic Tutor</SectionLabel>
+            <h2
+              id="tutor-heading"
+              className="serif"
+              style={{
+                margin: "14px 0 0",
+                fontSize: "clamp(24px,2.6vw,32px)",
+                fontWeight: 400,
+                color: "#eef2f7",
+              }}
+            >
+              Talk through math and science, your way.
+            </h2>
+            <p
+              style={{
+                marginTop: 12,
+                color: "var(--silver)",
+                fontWeight: 300,
+                fontSize: 15,
+              }}
+            >
+              Pick any subject and topic, then have a live, hands-free voice
+              conversation with a tutor that guides you to the answer instead of
+              handing it over. No experiment required.
+            </p>
+          </div>
+          <PrimaryButton onClick={onOpenTutor}>
+            Open Socratic Tutor
+          </PrimaryButton>
+        </Panel>
+      </section>
+
       <section aria-labelledby="focus-heading">
         <Panel
           style={{
@@ -114,9 +152,20 @@ export default function HomePage({ onOpen, onBack, onOpenExtension }) {
               data ever leaves the browser.
             </p>
           </div>
-          <SecondaryButton onClick={onOpenExtension}>
-            Get the extension
-          </SecondaryButton>
+          {CHROME_STORE_URL ? (
+            <a
+              className="btn"
+              href={CHROME_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Get the extension
+            </a>
+          ) : (
+            <SecondaryButton onClick={onOpenExtension}>
+              Get the extension
+            </SecondaryButton>
+          )}
         </Panel>
       </section>
     </PageShell>

@@ -89,31 +89,6 @@ export function SecondaryButton({ className = "", ...rest }) {
   return <button className={"btn " + className} {...rest} />;
 }
 
-export function StatusBadge({ state, error }) {
-  if (state === "ok") {
-    return (
-      <span className="status-badge ok">
-        <span className="led" />
-        backend online
-      </span>
-    );
-  }
-  if (state === "error") {
-    return (
-      <span className="status-badge err" title={error}>
-        <span className="led" />
-        backend offline
-      </span>
-    );
-  }
-  return (
-    <span className="status-badge">
-      <span className="led" />
-      backend checking
-    </span>
-  );
-}
-
 export function ErrorCard({ title, detail }) {
   return (
     <div role="alert" className="notice err">

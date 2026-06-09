@@ -1,4 +1,4 @@
-# AI Lab Companion
+# NovaMind AI
 
 A web app giving high school students a hands-free AI lab assistant. Two modes,
 one shared core.
@@ -25,7 +25,7 @@ experiments/*.json        Shared experiment definitions (source of truth)
 
 frontend/                 Vite + React + Tailwind (the app)
   src/supabaseClient.js    supabase-js client (anon key, browser-safe)
-  src/api.js               Data layer: Supabase first, legacy FastAPI fallback
+  src/api.js               Data layer: Supabase table reads + edge function calls
   src/ui.jsx               Shared dark "mission deck" UI primitives
   src/LandingPage.jsx      Landing (design language source)
   src/HomePage.jsx         Dashboard / experiment library
@@ -43,8 +43,6 @@ supabase/                 Supabase backend (primary)
 
 chrome-extension/         Focus Guard (MV3) — packaged to
                           frontend/public/focus-guard-extension.zip
-
-backend/                  Legacy FastAPI proxy — OPTIONAL local fallback only
 ```
 
 ### Frontend
@@ -52,8 +50,9 @@ React + Vite + Tailwind. Camera via `getUserMedia`. The whole app reuses the
 landing page's cinematic style via `src/ui.jsx` (black canvas, uppercase bold
 type, bordered panels, cyan/amber accents, border-2 invert buttons). Experiments
 are read straight from Supabase with the anon key; AI/voice calls go to edge
-functions. If Supabase env vars are absent, `api.js` falls back to the legacy
-FastAPI backend so local dev works without the Supabase CLI.
+functions. If the Supabase env vars are missing or still set to the
+`.env.example` placeholders, `api.js` surfaces a clear "Supabase not configured"
+message instead of a raw network error.
 
 ### Supabase backend (primary)
 - **Database**: one `public.experiments` table (`id text pk`, `data jsonb`).
@@ -66,18 +65,12 @@ FastAPI backend so local dev works without the Supabase CLI.
 - Vision + reasoning: Featherless AI (OpenAI-compatible), Gemma-class VLM
   `google/gemma-3-27b-it`, frames sent as base64. Voice: ElevenLabs TTS.
 
-### Legacy FastAPI backend (`backend/`)
-Kept as an **optional local fallback** (used automatically when
-`VITE_SUPABASE_URL` is unset and `VITE_BACKEND_URL` points at it). It mirrors the
-same endpoints. Not required for production; safe to ignore if you run Supabase.
-
 ## Environment variables
 
 Frontend — `frontend/.env.local` (copy from `frontend/.env.example`). These are
 PUBLIC / browser-safe:
 - `VITE_SUPABASE_URL` — your project URL, e.g. `https://abc.supabase.co`
 - `VITE_SUPABASE_ANON_KEY` — anon public key (gated by RLS)
-- `VITE_BACKEND_URL` — optional; only for the legacy FastAPI fallback
 
 Edge functions — `supabase/functions/.env` (copy from `.env.example`). SECRET,
 never committed:
@@ -127,19 +120,9 @@ npm run build:extension              # → frontend/public/focus-guard-extension
 Then in Chrome: `chrome://extensions` → enable Developer mode → **Load
 unpacked** → select the `chrome-extension` folder (or unzip the downloaded zip).
 
-Legacy FastAPI fallback (optional):
-```powershell
-cd backend
-python -m venv .venv; .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env          # fill FEATHERLESS_API_KEY / ELEVENLABS_API_KEY
-uvicorn app.main:app --reload        # http://localhost:8000
-```
-
 ## Guardrails
-- API keys live ONLY server-side (Supabase edge function secrets, or the legacy
-  FastAPI backend). Never expose a secret key to the browser. The anon key is
-  browser-safe and gated by RLS.
+- API keys live ONLY server-side (Supabase edge function secrets). Never expose a
+  secret key to the browser. The anon key is browser-safe and gated by RLS.
 - Web only. No mobile native app.
 - The only database is the public, read-only `experiments` table. No accounts or
   login in the app.

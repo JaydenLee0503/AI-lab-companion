@@ -2,6 +2,7 @@
 
 const DEFAULTS = {
   enabled: true,
+  voice: true,
   cooldownSeconds: 60,
   sites: [
     "instagram.com",
@@ -16,6 +17,7 @@ const DEFAULTS = {
 };
 
 const enabledEl = document.getElementById("enabled");
+const voiceEl = document.getElementById("voice");
 const cooldownEl = document.getElementById("cooldown");
 const sitesEl = document.getElementById("sites");
 const savedEl = document.getElementById("saved");
@@ -28,10 +30,11 @@ function parseSites(text) {
 }
 
 async function load() {
-  const { enabled, cooldownSeconds, sites } = await chrome.storage.sync.get(
+  const { enabled, voice, cooldownSeconds, sites } = await chrome.storage.sync.get(
     DEFAULTS
   );
   enabledEl.checked = Boolean(enabled);
+  voiceEl.checked = Boolean(voice);
   cooldownEl.value = cooldownSeconds;
   sitesEl.value = (sites || []).join("\n");
 }
@@ -45,6 +48,7 @@ async function save() {
   const cooldown = Math.max(5, Math.min(3600, Number(cooldownEl.value) || 60));
   await chrome.storage.sync.set({
     enabled: enabledEl.checked,
+    voice: voiceEl.checked,
     cooldownSeconds: cooldown,
     sites: parseSites(sitesEl.value),
   });

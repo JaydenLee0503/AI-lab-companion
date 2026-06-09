@@ -3,6 +3,7 @@ import LandingPage from "./LandingPage";
 import HomePage from "./HomePage";
 import SimulationLab from "./SimulationLab";
 import RealLabGuide from "./RealLabGuide";
+import SocraticTutor from "./SocraticTutor";
 import ExtensionPage from "./ExtensionPage";
 import Sky from "./cinematic/Sky";
 
@@ -21,6 +22,9 @@ export default function App() {
   function openExtension() {
     setView({ name: "extension" });
   }
+  function openTutor() {
+    setView({ name: "tutor" });
+  }
 
   return (
     <>
@@ -31,12 +35,14 @@ export default function App() {
       {view.name === "real-lab" && (
         <RealLabGuide experimentId={view.experimentId} onBack={goHome} />
       )}
+      {view.name === "tutor" && <SocraticTutor onBack={goHome} />}
       {view.name === "extension" && <ExtensionPage onBack={goHome} />}
       {view.name === "home" && (
         <HomePage
           onOpen={openExperiment}
           onBack={goLanding}
           onOpenExtension={openExtension}
+          onOpenTutor={openTutor}
         />
       )}
       {view.name === "landing" && <LandingPage onStart={goHome} />}

@@ -1,11 +1,29 @@
 import { Panel, PageShell, SectionLabel } from "./ui";
+import {
+  CHROME_STORE_URL,
+  EXTENSION_ZIP_URL,
+  STORE_AVAILABLE,
+} from "./extensionConfig";
 
-const DOWNLOAD_URL = "/focus-guard-extension.zip";
-
-function DownloadButton({ children }) {
+// When the extension is published, the button sends you straight to the Chrome
+// Web Store listing (one click to install). Until then it falls back to the
+// local .zip + load-unpacked flow.
+function InstallButton({ children }) {
+  if (STORE_AVAILABLE) {
+    return (
+      <a
+        href={CHROME_STORE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn solid"
+      >
+        {children ?? "Get it on the Chrome Web Store"}
+      </a>
+    );
+  }
   return (
-    <a href={DOWNLOAD_URL} download className="btn solid">
-      {children}
+    <a href={EXTENSION_ZIP_URL} download className="btn solid">
+      {children ?? "Download .zip"}
     </a>
   );
 }
@@ -21,13 +39,21 @@ const defaultSites = [
   "facebook.com",
 ];
 
-const steps = [
+const storeSteps = [
+  "Open the Chrome Web Store listing.",
+  'Click "Add to Chrome", then confirm "Add extension".',
+  "Pin Focus Guard, then open its Options to edit your distracting-site list.",
+];
+
+const zipSteps = [
   "Download the ZIP and unzip it anywhere on your computer.",
   "Open Chrome and go to chrome://extensions.",
   "Turn on Developer mode (top-right toggle).",
   'Click "Load unpacked" and select the unzipped chrome-extension folder.',
   "Pin Focus Guard, then open its Options to edit your distracting-site list.",
 ];
+
+const steps = STORE_AVAILABLE ? storeSteps : zipSteps;
 
 export default function ExtensionPage({ onBack }) {
   return (
@@ -37,7 +63,7 @@ export default function ExtensionPage({ onBack }) {
       subtitle="A Manifest V3 Chrome extension that watches the active tab locally and alerts you when a distracting site takes focus during a lab. Everything stays on your machine."
       onBack={onBack}
       backLabel="Experiments"
-      right={<DownloadButton>Download .zip</DownloadButton>}
+      right={<InstallButton />}
     >
       <div className="exp-grid">
         <article className="exp-card">
@@ -106,7 +132,9 @@ export default function ExtensionPage({ onBack }) {
           ))}
         </ol>
         <div style={{ marginTop: 24 }}>
-          <DownloadButton>Download Focus Guard</DownloadButton>
+          <InstallButton>
+            {STORE_AVAILABLE ? "Get it on the Chrome Web Store" : "Download Focus Guard"}
+          </InstallButton>
         </div>
         <p style={{ marginTop: 12, fontSize: 13, color: "var(--muted)" }}>
           Prefer source? The unpacked extension also lives in the repo at{" "}

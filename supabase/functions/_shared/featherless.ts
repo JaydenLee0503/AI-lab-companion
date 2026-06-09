@@ -1,6 +1,6 @@
-// Featherless AI client (OpenAI-compatible). Mirrors the old FastAPI proxy:
-// text chat + single-image vision verification. The API key is read from the
-// function environment and never sent to the browser.
+// Featherless AI client (OpenAI-compatible): text chat + single-image vision
+// verification. The API key is read from the function environment and never
+// sent to the browser.
 
 import { HttpError } from "./http.ts";
 

@@ -66,6 +66,11 @@
       </div>
 
       <div class="row">
+        <input type="checkbox" id="voice" />
+        <label for="voice">Speak alerts aloud (device voice)</label>
+      </div>
+
+      <div class="row">
         <label for="cooldown">Alert cooldown (seconds)</label>
         <input type="number" id="cooldown" min="5" max="3600" />
       </div>
@@ -82,7 +87,8 @@
       <p class="note">
         Privacy: Focus Guard only reads the hostname of your active tab to compare
         it against this list. It never reads page content, passwords, messages, or
-        personal data, and it makes no network requests.
+        personal data, and it makes no network requests. Spoken alerts use your
+        device's built-in voice — no audio is sent anywhere.
       </p>
     </div>
     <script src="options.js"></script>

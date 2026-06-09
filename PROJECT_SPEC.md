@@ -1,4 +1,4 @@
-# PROJECT_SPEC — AI Lab Companion
+# PROJECT_SPEC — NovaMind AI
 
 > This file is the single source of truth for the project. Claude Code must
 > read it at the start of every `/goal` run and keep it updated as the project

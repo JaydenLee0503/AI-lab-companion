@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useConversation } from "@elevenlabs/react";
+import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import { getTutorVoiceSession } from "./api";
 import { ErrorCard, PrimaryButton, SecondaryButton } from "./ui";
 
@@ -25,11 +25,38 @@ function buildPrompt(exp, step) {
   );
 }
 
-export default function VoiceTutor({ exp, step }) {
+// Generic live-voice tutor over the ElevenLabs agent. Two ways to drive it:
+//   • Simulation Lab passes { exp, step } and the per-step Socratic prompt is
+//     built here.
+//   • The standalone Socratic Tutor passes an explicit { prompt, firstMessage }
+//     for a free-choice math/science conversation.
+// `useConversation` (v1.x) must run inside a <ConversationProvider>; without it
+// the hook throws on mount and blanks the page. Wrap the inner tutor here.
+export default function VoiceTutor(props) {
+  return (
+    <ConversationProvider>
+      <VoiceTutorInner {...props} />
+    </ConversationProvider>
+  );
+}
+
+function VoiceTutorInner({
+  exp,
+  step,
+  prompt,
+  firstMessage,
+  idleHint = "Real-time voice, powered by ElevenLabs.",
+  startLabel = "Start live voice tutor",
+}) {
   const [error, setError] = useState(null);
   const [starting, setStarting] = useState(false);
   const [transcript, setTranscript] = useState([]); // {source, text}
   const transcriptEndRef = useRef(null);
+
+  const sessionPrompt = prompt ?? buildPrompt(exp, step);
+  const sessionFirstMessage =
+    firstMessage ??
+    `Let's think through this step: ${step.instruction} What do you expect to happen, and why?`;
 
   const conversation = useConversation({
     onConnect: () => setError(null),
@@ -48,10 +75,15 @@ export default function VoiceTutor({ exp, step }) {
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
 
-  // End the session if the user navigates away.
+  // End the session if the user navigates away. endSession() returns void in
+  // this SDK version (not a Promise), so don't chain .catch on it.
   useEffect(() => {
     return () => {
-      conversation.endSession().catch(() => {});
+      try {
+        conversation.endSession();
+      } catch {
+        /* nothing to clean up */
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -69,8 +101,8 @@ export default function VoiceTutor({ exp, step }) {
         signedUrl: signed_url,
         overrides: {
           agent: {
-            prompt: { prompt: buildPrompt(exp, step) },
-            firstMessage: `Let's think through this step: ${step.instruction} What do you expect to happen, and why?`,
+            prompt: { prompt: sessionPrompt },
+            firstMessage: sessionFirstMessage,
             language: "en",
           },
         },
@@ -86,9 +118,9 @@ export default function VoiceTutor({ exp, step }) {
     }
   }
 
-  async function stop() {
+  function stop() {
     try {
-      await conversation.endSession();
+      conversation.endSession();
     } catch {
       /* already closed */
     }
@@ -101,7 +133,7 @@ export default function VoiceTutor({ exp, step }) {
           <SecondaryButton onClick={stop}>End voice session</SecondaryButton>
         ) : (
           <PrimaryButton onClick={start} disabled={starting}>
-            {starting ? "Connecting…" : "Start live voice tutor"}
+            {starting ? "Connecting…" : startLabel}
           </PrimaryButton>
         )}
         <span style={{ fontSize: 13, color: "var(--silver)" }}>
@@ -109,7 +141,7 @@ export default function VoiceTutor({ exp, step }) {
             ? conversation.isSpeaking
               ? "Tutor is speaking…"
               : "Listening — just talk."
-            : "Real-time voice, powered by ElevenLabs."}
+            : idleHint}
         </span>
       </div>
 

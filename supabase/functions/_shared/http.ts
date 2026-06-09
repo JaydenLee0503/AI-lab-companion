@@ -1,4 +1,4 @@
-// Shared HTTP helpers for the AI Lab Companion edge functions.
+// Shared HTTP helpers for the NovaMind AI edge functions.
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

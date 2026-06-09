@@ -1,4 +1,4 @@
-# Focus Guard — AI Lab Companion Chrome extension
+# Focus Guard — NovaMind AI Chrome extension
 
 A tiny **Manifest V3** extension that helps students stay on task during a lab.
 When the active tab is a distracting site, Focus Guard pops a **local Chrome

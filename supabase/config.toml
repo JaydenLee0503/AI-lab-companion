@@ -1,4 +1,4 @@
-# Supabase project configuration for AI Lab Companion.
+# Supabase project configuration for NovaMind AI.
 # Docs: https://supabase.com/docs/guides/cli/config
 project_id = "ai-lab-companion"
 
@@ -44,4 +44,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.tts]
+verify_jwt = false
+
+[functions.stt]
+verify_jwt = false
+
+[functions.tutor-voice]
 verify_jwt = false

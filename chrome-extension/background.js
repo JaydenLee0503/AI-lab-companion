@@ -1,12 +1,14 @@
 // Focus Guard — MV3 service worker.
 //
 // Watches which tab is active and, when its hostname matches the user's
-// distracting-site list, fires a local Chrome notification. It only ever reads
+// distracting-site list, fires a local Chrome notification (and, if voice is
+// enabled, speaks it via the browser's built-in chrome.tts). It only ever reads
 // the tab's URL hostname — never page content, form data, or messages — and it
 // never makes a network request. All settings live in chrome.storage.sync.
 
 const DEFAULTS = {
   enabled: true,
+  voice: true,
   cooldownSeconds: 60,
   sites: [
     "instagram.com",
@@ -53,7 +55,7 @@ function matches(host, sites) {
 
 async function checkUrl(url) {
   if (!url || !/^https?:/i.test(url)) return;
-  const { enabled, sites, cooldownSeconds } = await getSettings();
+  const { enabled, voice, sites, cooldownSeconds } = await getSettings();
   if (!enabled) return;
 
   const host = hostnameFromUrl(url);
@@ -73,6 +75,14 @@ async function checkUrl(url) {
 
   chrome.action.setBadgeText({ text: "!" });
   chrome.action.setBadgeBackgroundColor({ color: "#f59e0b" });
+
+  // Local, on-device speech — no API key and no network request.
+  if (voice) {
+    chrome.tts.speak(`${host} can wait. Back to your lab.`, {
+      rate: 1.0,
+      enqueue: false,
+    });
+  }
 }
 
 // Active tab switched.

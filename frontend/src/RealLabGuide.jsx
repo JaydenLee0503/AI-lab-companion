@@ -207,18 +207,24 @@ export default function RealLabGuide({ experimentId, onBack }) {
       </Panel>
 
       <div className="cam-stage">
-        {camState.state === "ready" ? (
-          <video ref={videoRef} playsInline muted />
-        ) : camState.state === "error" ? (
+        {/* The video must stay mounted so videoRef exists when the stream is
+            attached; overlay the requesting/error states on top of it. */}
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          style={{ display: camState.state === "ready" ? "block" : "none" }}
+        />
+        {camState.state === "error" ? (
           <div
             className="cam-hint"
             style={{ padding: 16, textAlign: "center", color: "oklch(0.78 0.16 25)" }}
           >
             Camera unavailable: {camState.error}
           </div>
-        ) : (
+        ) : camState.state !== "ready" ? (
           <div className="cam-hint">Requesting camera…</div>
-        )}
+        ) : null}
         <canvas ref={canvasRef} style={{ display: "none" }} />
       </div>
 

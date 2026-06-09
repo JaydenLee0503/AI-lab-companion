@@ -1,4 +1,4 @@
--- AI Lab Companion — shared experiment library.
+-- NovaMind AI — shared experiment library.
 --
 -- Experiments are the shared core for both modes (Real Lab Guide / Simulation
 -- Lab). Each row stores one experiment definition as JSONB, keyed by its id.
