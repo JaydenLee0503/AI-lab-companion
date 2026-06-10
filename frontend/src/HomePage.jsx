@@ -10,7 +10,13 @@ import {
   SectionLabel,
 } from "./ui";
 
-export default function HomePage({ onOpen, onBack, onOpenExtension, onOpenTutor }) {
+export default function HomePage({
+  onOpen,
+  onBack,
+  onOpenExtension,
+  onOpenTutor,
+  onOpenCustom,
+}) {
   const [experiments, setExperiments] = useState({ state: "loading" });
 
   useEffect(() => {
@@ -70,6 +76,47 @@ export default function HomePage({ onOpen, onBack, onOpenExtension, onOpenTutor 
             ))}
           </ul>
         )}
+      </section>
+
+      <section aria-labelledby="custom-heading">
+        <Panel
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 24,
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ maxWidth: 560 }}>
+            <SectionLabel accent="amber">Custom Lab</SectionLabel>
+            <h2
+              id="custom-heading"
+              className="serif"
+              style={{
+                margin: "14px 0 0",
+                fontSize: "clamp(24px,2.6vw,32px)",
+                fontWeight: 400,
+                color: "#eef2f7",
+              }}
+            >
+              Don't see your experiment? Design one from any topic.
+            </h2>
+            <p
+              style={{
+                marginTop: 12,
+                color: "var(--silver)",
+                fontWeight: 300,
+                fontSize: 15,
+              }}
+            >
+              Type a topic or paste instructions and we'll build a safe,
+              step-by-step lab on the spot — then run it with the webcam guide or
+              the simulated tutor, just like the library experiments.
+            </p>
+          </div>
+          <PrimaryButton onClick={onOpenCustom}>Build a custom lab</PrimaryButton>
+        </Panel>
       </section>
 
       <section aria-labelledby="tutor-heading">

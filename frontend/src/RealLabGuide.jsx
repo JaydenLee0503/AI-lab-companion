@@ -14,8 +14,9 @@ import {
   SectionLabel,
 } from "./ui";
 
-export default function RealLabGuide({ experimentId, onBack }) {
-  const [exp, setExp] = useState(null);
+export default function RealLabGuide({ experimentId, experiment, onBack }) {
+  const isCustom = !!experiment;
+  const [exp, setExp] = useState(experiment ?? null);
   const [loadError, setLoadError] = useState(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [voiceOn, setVoiceOn] = useState(true);
@@ -29,10 +30,14 @@ export default function RealLabGuide({ experimentId, onBack }) {
   const streamRef = useRef(null);
 
   useEffect(() => {
+    if (experiment) {
+      setExp(experiment);
+      return;
+    }
     getExperiment(experimentId)
       .then(setExp)
       .catch((e) => setLoadError(String(e.message || e)));
-  }, [experimentId]);
+  }, [experimentId, experiment]);
 
   // Start camera once on mount; stop on unmount.
   useEffect(() => {
@@ -126,7 +131,12 @@ export default function RealLabGuide({ experimentId, onBack }) {
     setVerifying(true);
     setError(null);
     try {
-      const res = await verifyCheckpoint(exp.id, step.id, b64);
+      const res = await verifyCheckpoint(
+        exp.id,
+        step.id,
+        b64,
+        isCustom ? exp : undefined
+      );
       setResult(res);
       if (voiceOn) {
         if (res.passed) {
@@ -138,7 +148,8 @@ export default function RealLabGuide({ experimentId, onBack }) {
                 exp.id,
                 step.id,
                 exp.steps[nextIdx].id,
-                res.observations
+                res.observations,
+                isCustom ? exp : undefined
               );
               await speak(narration);
             } catch (e) {

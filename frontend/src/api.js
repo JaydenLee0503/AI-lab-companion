@@ -96,9 +96,12 @@ export async function getExperiment(id) {
 
 // ---------- Socratic Tutor (Simulation Lab) ----------
 
-export async function tutorChat(experimentId, stepId, messages) {
+// `experiment` is sent inline for custom labs (not in the DB); library labs pass
+// only the id and the function loads it server-side.
+export async function tutorChat(experimentId, stepId, messages, experiment) {
   return callFunction("tutor-chat", {
     experiment_id: experimentId,
+    experiment: experiment ?? undefined,
     step_id: stepId,
     messages,
   });
@@ -108,21 +111,33 @@ export async function tutorTransition(
   experimentId,
   currentStepId,
   nextStepId,
-  observations
+  observations,
+  experiment
 ) {
   return callFunction("tutor-transition", {
     experiment_id: experimentId,
+    experiment: experiment ?? undefined,
     current_step_id: currentStepId,
     next_step_id: nextStepId,
     verification_observations: observations,
   });
 }
 
+// ---------- Custom Lab (user-generated experiment) ----------
+
+export async function generateExperiment(topic, instructions) {
+  return callFunction("generate-experiment", {
+    topic,
+    instructions: instructions ?? undefined,
+  });
+}
+
 // ---------- AI Lab Supporter (Real Lab Guide) ----------
 
-export async function verifyCheckpoint(experimentId, stepId, imageB64) {
+export async function verifyCheckpoint(experimentId, stepId, imageB64, experiment) {
   return callFunction("vision-checkpoint", {
     experiment_id: experimentId,
+    experiment: experiment ?? undefined,
     step_id: stepId,
     image_b64: imageB64,
   });

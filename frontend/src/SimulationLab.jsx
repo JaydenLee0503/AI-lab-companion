@@ -12,8 +12,9 @@ import VoiceTutor from "./VoiceTutor";
 
 const READY_TAG = "[READY_FOR_NEXT_STEP]";
 
-export default function SimulationLab({ experimentId, onBack }) {
-  const [exp, setExp] = useState(null);
+export default function SimulationLab({ experimentId, experiment, onBack }) {
+  const isCustom = !!experiment;
+  const [exp, setExp] = useState(experiment ?? null);
   const [loadError, setLoadError] = useState(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [history, setHistory] = useState([]); // {role, content}
@@ -29,10 +30,14 @@ export default function SimulationLab({ experimentId, onBack }) {
   useEffect(() => {
     setHistory([]);
     setStepIndex(0);
+    if (experiment) {
+      setExp(experiment);
+      return;
+    }
     getExperiment(experimentId)
       .then(setExp)
       .catch((e) => setLoadError(String(e.message || e)));
-  }, [experimentId]);
+  }, [experimentId, experiment]);
 
   const step = exp?.steps[stepIndex];
 
@@ -45,7 +50,12 @@ export default function SimulationLab({ experimentId, onBack }) {
     (async () => {
       setThinking(true);
       try {
-        const { reply } = await tutorChat(exp.id, step.id, []);
+        const { reply } = await tutorChat(
+          exp.id,
+          step.id,
+          [],
+          isCustom ? exp : undefined
+        );
         if (cancelled) return;
         const visible = stripReadyTag(reply);
         setHistory([{ role: "assistant", content: visible }]);
@@ -87,7 +97,12 @@ export default function SimulationLab({ experimentId, onBack }) {
     setHistory(next);
     setThinking(true);
     try {
-      const { reply } = await tutorChat(exp.id, step.id, next);
+      const { reply } = await tutorChat(
+        exp.id,
+        step.id,
+        next,
+        isCustom ? exp : undefined
+      );
       const ready = reply.includes(READY_TAG);
       const visible = stripReadyTag(reply);
       setHistory((h) => [...h, { role: "assistant", content: visible, ready }]);
