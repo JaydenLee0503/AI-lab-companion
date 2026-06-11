@@ -18,16 +18,41 @@ notification** nudging you back to work.
 - Reads **only the URL hostname** of the active tab.
 - Never reads page content, form fields, passwords, messages, or any personal
   data.
-- Makes **no network requests** — everything runs locally. Settings are stored
-  in `chrome.storage.sync`.
+- **By default, makes no network requests** — everything runs locally and
+  settings live in `chrome.storage.sync`.
+- **Optional AI nudges (off by default):** if you enable them in Options, the
+  matched hostname (only the hostname) is POSTed to the `focus-coach` Supabase
+  edge function to generate a friendlier message. No API key lives in the
+  extension — it carries the same browser-safe anon key the web app ships, and
+  the secret model key stays server-side. Any failure falls back to the local
+  message. Turn the toggle off to return to zero network requests.
 
 ## Permissions (minimal)
 
-| Permission      | Why |
-|-----------------|-----|
-| `tabs`          | Read the active tab's URL to compare its hostname. |
-| `storage`       | Save your site list / settings. |
-| `notifications` | Show the local focus alert. |
+| Permission                     | Why |
+|--------------------------------|-----|
+| `tabs`                         | Read the active tab's URL to compare its hostname. |
+| `storage`                      | Save your site list / settings. |
+| `notifications`                | Show the local focus alert. |
+| `host_permissions: *.supabase.co` | Only used when AI nudges are enabled, to reach the `focus-coach` function. |
+
+## AI nudges setup
+
+AI nudges read public, browser-safe values from `config.js`. Before building the
+zip, fill them in with your project's URL and anon key (the same pair the web app
+uses):
+
+```js
+self.FOCUS_GUARD = {
+  SUPABASE_URL: "https://YOUR-REF.supabase.co",
+  SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
+};
+```
+
+Deploy the function with the rest: `supabase functions deploy focus-coach`
+(it needs `FEATHERLESS_API_KEY` set server-side, like the other functions).
+Until `config.js` is filled in, the toggle is harmless — nudges silently use the
+built-in local message.
 
 ## Install (unpacked)
 
@@ -57,6 +82,7 @@ This writes `frontend/public/focus-guard-extension.zip`, which the app's
 
 - `manifest.json` — MV3 manifest.
 - `background.js` — service worker; the tab-watching logic.
+- `config.js` — public Supabase URL + anon key for optional AI nudges.
 - `popup.html` / `popup.js` — toolbar popup (toggle + status).
 - `options.html` / `options.js` — settings page.
 - `icons/` — generated action icons.

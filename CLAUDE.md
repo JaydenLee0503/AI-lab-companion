@@ -39,7 +39,7 @@ supabase/                 Supabase backend (primary)
   seed.sql                 Generated experiment rows
   functions/               Deno edge functions (the key-holding proxy)
     _shared/               http, featherless, elevenlabs, experiments helpers
-    health, tutor-chat, tutor-transition, vision-checkpoint, tts
+    health, tutor-chat, tutor-transition, vision-checkpoint, tts, focus-coach
 
 chrome-extension/         Focus Guard (MV3) — packaged to
                           frontend/public/focus-guard-extension.zip
@@ -59,7 +59,8 @@ message instead of a raw network error.
   Row-level security allows anonymous **SELECT only** — no writes from the
   browser, no login. Seeded from `supabase/seed.sql`.
 - **Edge Functions** (Deno) are the proxy that holds the secret API keys:
-  `tutor-chat`, `tutor-transition`, `vision-checkpoint`, `tts`, `health`.
+  `tutor-chat`, `tutor-transition`, `vision-checkpoint`, `tts`, `health`,
+  `focus-coach` (the extension's opt-in nudge writer).
   Secrets (`FEATHERLESS_API_KEY`, `ELEVENLABS_API_KEY`) are set via
   `supabase secrets` and never reach the browser.
 - Vision + reasoning: Featherless AI (OpenAI-compatible), Gemma-class VLM
@@ -130,7 +131,12 @@ unpacked** → select the `chrome-extension` folder (or unzip the downloaded zip
 - Experiments must use cheap/household materials and be safe (no flame, no
   hazardous chemicals). Keep the library small and solid.
 - Chrome extension reads only the active tab hostname; never page content,
-  credentials, messages, or personal data, and makes no network requests.
+  credentials, messages, or personal data. By default it makes no network
+  requests. It has ONE opt-in exception (off by default): "AI nudges" POSTs the
+  matched hostname — and only the hostname — to the `focus-coach` edge function.
+  No secret key in the extension (it carries the browser-safe anon key); failures
+  fall back to the local message. Keep the toggle default off and the privacy
+  copy honest.
 
 ## Verification checklist
 - [ ] `cd frontend; npm install` succeeds.

@@ -54,3 +54,6 @@ verify_jwt = false
 
 [functions.tutor-voice]
 verify_jwt = false
+
+[functions.focus-coach]
+verify_jwt = false

@@ -71,6 +71,17 @@
       </div>
 
       <div class="row">
+        <input type="checkbox" id="aiEnabled" />
+        <label for="aiEnabled">Use AI-written nudges (sends the site's name)</label>
+      </div>
+      <p class="note" style="margin-top: 8px;">
+        Off by default. When on, the hostname of a distracting site (e.g.
+        <code>youtube.com</code>) is sent to NovaMind's server to write a
+        friendlier nudge. Never your browsing history, page content, or other
+        data. Turn it off and Focus Guard makes no network requests at all.
+      </p>
+
+      <div class="row">
         <label for="cooldown">Alert cooldown (seconds)</label>
         <input type="number" id="cooldown" min="5" max="3600" />
       </div>
@@ -87,8 +98,10 @@
       <p class="note">
         Privacy: Focus Guard only reads the hostname of your active tab to compare
         it against this list. It never reads page content, passwords, messages, or
-        personal data, and it makes no network requests. Spoken alerts use your
-        device's built-in voice — no audio is sent anywhere.
+        personal data. With AI nudges off (the default) it makes no network
+        requests at all; with them on, only the matched hostname leaves your
+        browser. Spoken alerts use your device's built-in voice — no audio is sent
+        anywhere.
       </p>
     </div>
     <script src="options.js"></script>

@@ -3,12 +3,20 @@
 // Watches which tab is active and, when its hostname matches the user's
 // distracting-site list, fires a local Chrome notification (and, if voice is
 // enabled, speaks it via the browser's built-in chrome.tts). It only ever reads
-// the tab's URL hostname — never page content, form data, or messages — and it
-// never makes a network request. All settings live in chrome.storage.sync.
+// the tab's URL hostname — never page content, form data, or messages.
+//
+// By default it makes NO network requests. If (and only if) the user turns on
+// AI nudges in Options, it POSTs the bare hostname to the focus-coach edge
+// function to get a friendlier, varied nudge; any failure falls back silently
+// to the built-in local message. All settings live in chrome.storage.sync.
+
+// Public, browser-safe Supabase URL + anon key (RLS-gated). No secrets here.
+importScripts("config.js");
 
 const DEFAULTS = {
   enabled: true,
   voice: true,
+  aiEnabled: false,
   cooldownSeconds: 60,
   sites: [
     "instagram.com",
@@ -53,9 +61,35 @@ function matches(host, sites) {
   });
 }
 
+// Opt-in only: ask the focus-coach edge function for a friendlier nudge. Sends
+// just the hostname, holds no secret key (the anon key is browser-safe), and
+// returns null on any problem so the caller can use the local fallback.
+async function aiNudge(host) {
+  const cfg = self.FOCUS_GUARD || {};
+  if (!cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-REF")) return null;
+  try {
+    const res = await fetch(`${cfg.SUPABASE_URL}/functions/v1/focus-coach`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: cfg.SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ host }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data?.nudge === "string" && data.nudge.trim()
+      ? data.nudge.trim()
+      : null;
+  } catch {
+    return null; // offline / function down → fall back to the local message
+  }
+}
+
 async function checkUrl(url) {
   if (!url || !/^https?:/i.test(url)) return;
-  const { enabled, voice, sites, cooldownSeconds } = await getSettings();
+  const { enabled, voice, aiEnabled, sites, cooldownSeconds } = await getSettings();
   if (!enabled) return;
 
   const host = hostnameFromUrl(url);
@@ -65,23 +99,24 @@ async function checkUrl(url) {
   if (lastAlert[host] && now - lastAlert[host] < cooldownSeconds * 1000) return;
   lastAlert[host] = now;
 
+  // Default message is fully local; AI (when opted in) only refines it.
+  const fallback = `${host} can wait — back to your lab. 🔬`;
+  const message = aiEnabled ? (await aiNudge(host)) || fallback : fallback;
+
   chrome.notifications.create(`focus-${now}`, {
     type: "basic",
     iconUrl: "icons/icon128.png",
     title: "Focus Guard",
-    message: `${host} can wait — back to your lab. 🔬`,
+    message,
     priority: 2,
   });
 
   chrome.action.setBadgeText({ text: "!" });
   chrome.action.setBadgeBackgroundColor({ color: "#f59e0b" });
 
-  // Local, on-device speech — no API key and no network request.
+  // Local, on-device speech of whatever message we settled on.
   if (voice) {
-    chrome.tts.speak(`${host} can wait. Back to your lab.`, {
-      rate: 1.0,
-      enqueue: false,
-    });
+    chrome.tts.speak(message, { rate: 1.0, enqueue: false });
   }
 }
 
