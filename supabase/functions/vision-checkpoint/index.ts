@@ -3,7 +3,7 @@
 
 import { corsHeaders, handle, HttpError, json } from "../_shared/http.ts";
 import { visionVerify } from "../_shared/featherless.ts";
-import { getStep, loadExperiment, Step } from "../_shared/experiments.ts";
+import { getStep, resolveExperiment, Step } from "../_shared/experiments.ts";
 
 function visionUserPrompt(step: Step): string {
   const cp = step.checkpoint;
@@ -21,14 +21,11 @@ function visionUserPrompt(step: Step): string {
 }
 
 Deno.serve(handle(async (req) => {
-  const { experiment_id, step_id, image_b64 } = await req.json();
-  if (!experiment_id || !step_id || !image_b64) {
-    throw new HttpError(
-      400,
-      "experiment_id, step_id and image_b64 are required",
-    );
+  const { experiment_id, experiment, step_id, image_b64 } = await req.json();
+  if (!step_id || !image_b64) {
+    throw new HttpError(400, "step_id and image_b64 are required");
   }
-  const exp = await loadExperiment(experiment_id);
+  const exp = await resolveExperiment(experiment, experiment_id);
   const step = getStep(exp, step_id);
   if (!step.checkpoint) {
     throw new HttpError(400, "this step has no checkpoint defined");

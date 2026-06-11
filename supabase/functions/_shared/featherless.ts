@@ -111,7 +111,7 @@ export async function visionVerify(
 }
 
 /** Best-effort: find the first {...} block and parse it. */
-function extractJson(text: string): Record<string, unknown> {
+export function extractJson(text: string): Record<string, unknown> {
   let t = text.trim().replace(/^```(?:json)?\s*/m, "").replace(/\s*```$/m, "");
   try {
     return JSON.parse(t);

@@ -50,6 +50,27 @@ export async function loadExperiment(id: string): Promise<Experiment> {
   return data.data as Experiment;
 }
 
+/**
+ * Resolve the experiment for a request. Custom labs are generated on the fly and
+ * are NOT in the DB, so the browser sends the whole experiment inline; library
+ * labs send only an id and we load it. Inline data is trusted only to drive the
+ * tutor/vision prompts — it grants no DB access.
+ */
+export async function resolveExperiment(
+  inline: unknown,
+  id: unknown,
+): Promise<Experiment> {
+  if (inline && typeof inline === "object") {
+    const exp = inline as Experiment;
+    if (!Array.isArray(exp.steps) || exp.steps.length === 0) {
+      throw new HttpError(400, "inline experiment is missing steps");
+    }
+    return exp;
+  }
+  if (typeof id === "string" && id) return loadExperiment(id);
+  throw new HttpError(400, "experiment or experiment_id is required");
+}
+
 export function getStep(exp: Experiment, stepId: string): Step {
   const step = exp.steps.find((s) => s.id === stepId);
   if (!step) throw new HttpError(404, "step not found");

@@ -2,7 +2,7 @@
 
 import { handle, HttpError, json } from "../_shared/http.ts";
 import { chat } from "../_shared/featherless.ts";
-import { Experiment, getStep, loadExperiment, Step } from "../_shared/experiments.ts";
+import { Experiment, getStep, resolveExperiment, Step } from "../_shared/experiments.ts";
 
 function systemPrompt(exp: Experiment, step: Step): string {
   const sim = step.simulation;
@@ -25,11 +25,11 @@ function systemPrompt(exp: Experiment, step: Step): string {
 }
 
 Deno.serve(handle(async (req) => {
-  const { experiment_id, step_id, messages } = await req.json();
-  if (!experiment_id || !step_id) {
-    throw new HttpError(400, "experiment_id and step_id are required");
+  const { experiment_id, experiment, step_id, messages } = await req.json();
+  if (!step_id) {
+    throw new HttpError(400, "step_id is required");
   }
-  const exp = await loadExperiment(experiment_id);
+  const exp = await resolveExperiment(experiment, experiment_id);
   const step = getStep(exp, step_id);
 
   const chatMessages: { role: string; content: string }[] = [

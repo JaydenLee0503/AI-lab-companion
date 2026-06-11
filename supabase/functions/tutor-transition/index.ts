@@ -3,15 +3,15 @@
 
 import { handle, HttpError, json } from "../_shared/http.ts";
 import { chat } from "../_shared/featherless.ts";
-import { loadExperiment } from "../_shared/experiments.ts";
+import { resolveExperiment } from "../_shared/experiments.ts";
 
 Deno.serve(handle(async (req) => {
-  const { experiment_id, next_step_id, verification_observations } = await req
-    .json();
-  if (!experiment_id || !next_step_id) {
-    throw new HttpError(400, "experiment_id and next_step_id are required");
+  const { experiment_id, experiment, next_step_id, verification_observations } =
+    await req.json();
+  if (!next_step_id) {
+    throw new HttpError(400, "next_step_id is required");
   }
-  const exp = await loadExperiment(experiment_id);
+  const exp = await resolveExperiment(experiment, experiment_id);
   const nextStep = exp.steps.find((s) => s.id === next_step_id);
   if (!nextStep) throw new HttpError(404, "next_step not found");
 

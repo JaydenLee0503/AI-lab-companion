@@ -37,6 +37,9 @@ verify_jwt = false
 [functions.tutor-chat]
 verify_jwt = false
 
+[functions.generate-experiment]
+verify_jwt = false
+
 [functions.tutor-transition]
 verify_jwt = false
 
