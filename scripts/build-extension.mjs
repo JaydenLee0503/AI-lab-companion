@@ -1,8 +1,12 @@
 // Packages chrome-extension/ into a downloadable zip the app can link to:
 //   frontend/public/focus-guard-extension.zip
 //
-// The archive contains a top-level `chrome-extension` folder, so unzipping
-// yields a folder ready for Chrome's "Load unpacked".
+// The archive holds the extension files at its ROOT (manifest.json, icons/,
+// ...) — no wrapper folder. Unzipping yields a single `focus-guard-extension`
+// folder with manifest.json directly inside, ready for Chrome's "Load
+// unpacked". (Wrapping them in a nested folder makes Chrome report
+// "Manifest file is missing or unreadable", since it looks for the manifest
+// at the top level of the folder you select.)
 //
 //   node scripts/build-extension.mjs
 //
@@ -20,19 +24,21 @@ mkdirSync(outDir, { recursive: true });
 rmSync(out, { force: true });
 
 if (process.platform === "win32") {
+  // `<dir>\*` archives the folder's CONTENTS at the root (subfolders like
+  // icons/ are preserved), not the folder itself — so there's no wrapper.
   execFileSync(
     "powershell",
     [
       "-NoProfile",
       "-Command",
-      `Compress-Archive -Path '${srcDir}' -DestinationPath '${out}' -Force`,
+      `Compress-Archive -Path '${join(srcDir, "*")}' -DestinationPath '${out}' -Force`,
     ],
     { stdio: "inherit" }
   );
 } else {
-  // zip the folder itself so the archive keeps a top-level directory.
-  execFileSync("zip", ["-r", out, "chrome-extension"], {
-    cwd: root,
+  // zip the contents from inside the folder so the archive has no wrapper dir.
+  execFileSync("zip", ["-r", out, "."], {
+    cwd: srcDir,
     stdio: "inherit",
   });
 }
