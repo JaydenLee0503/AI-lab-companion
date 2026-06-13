@@ -5,6 +5,6 @@
 //
 // Loaded by background.js via importScripts("config.js").
 self.FOCUS_GUARD = {
-  SUPABASE_URL: "https://YOUR-REF.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR-ANON-PUBLIC-KEY",
+  SUPABASE_URL: "https://bekctltzlhrfaqneyjeg.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJla2N0bHR6bGhyZmFxbmV5amVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTM5MDUsImV4cCI6MjA5NjQyOTkwNX0.yjjuTFQ79vlu71e2OERph_CnJrfuK_xduZenWpVLCvQ",
 };

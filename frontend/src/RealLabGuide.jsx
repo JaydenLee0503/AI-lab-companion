@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import {
   getExperiment,
-  ttsAudioUrl,
   tutorTransition,
   verifyCheckpoint,
 } from "./api";
+import { speak, stopSpeaking } from "./speak";
 import {
   ErrorCard,
   Panel,
@@ -82,6 +82,13 @@ export default function RealLabGuide({ experimentId, experiment, onBack }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex, exp?.id]);
+
+  // Silence any in-progress narration when voice is switched off or the guide
+  // is closed, so it never keeps talking after you leave.
+  useEffect(() => {
+    if (!voiceOn) stopSpeaking();
+    return stopSpeaking;
+  }, [voiceOn]);
 
   if (loadError) {
     return (
@@ -289,10 +296,3 @@ export default function RealLabGuide({ experimentId, experiment, onBack }) {
   );
 }
 
-async function speak(text) {
-  if (!text || !text.trim()) return;
-  const url = await ttsAudioUrl(text);
-  const audio = new Audio(url);
-  audio.addEventListener("ended", () => URL.revokeObjectURL(url));
-  await audio.play();
-}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getExperiment, transcribeAudio, ttsAudioUrl, tutorChat } from "./api";
+import { getExperiment, transcribeAudio, tutorChat } from "./api";
 import {
   ErrorCard,
   Panel,
@@ -8,7 +8,7 @@ import {
   SecondaryButton,
   SectionLabel,
 } from "./ui";
-import VoiceTutor from "./VoiceTutor";
+import { speak, stopSpeaking } from "./speak";
 
 const READY_TAG = "[READY_FOR_NEXT_STEP]";
 
@@ -71,6 +71,12 @@ export default function SimulationLab({ experimentId, experiment, onBack }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exp?.id, step?.id]);
+
+  // Stop spoken replies when "Speak replies" is turned off or the lab closes.
+  useEffect(() => {
+    if (!voiceOn) stopSpeaking();
+    return stopSpeaking;
+  }, [voiceOn]);
 
   if (loadError) {
     return (
@@ -230,16 +236,6 @@ export default function SimulationLab({ experimentId, experiment, onBack }) {
         </div>
       </Panel>
 
-      <Panel aria-label="Live voice tutor">
-        <h3 className="deck-label">Live voice tutor (beta)</h3>
-        <p style={{ marginTop: 8, color: "var(--silver)", fontSize: 14 }}>
-          Hold a real-time spoken conversation with the tutor about this step.
-        </p>
-        <div style={{ marginTop: 14 }}>
-          <VoiceTutor exp={exp} step={step} />
-        </div>
-      </Panel>
-
       <div
         style={{
           display: "flex",
@@ -319,14 +315,6 @@ function VoiceToggle({ on, setOn }) {
       Speak replies
     </label>
   );
-}
-
-async function speak(text) {
-  if (!text || !text.trim()) return;
-  const url = await ttsAudioUrl(text);
-  const audio = new Audio(url);
-  audio.addEventListener("ended", () => URL.revokeObjectURL(url));
-  await audio.play();
 }
 
 function stripReadyTag(s) {

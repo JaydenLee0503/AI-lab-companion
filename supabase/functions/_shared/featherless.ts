@@ -6,10 +6,12 @@ import { HttpError } from "./http.ts";
 
 const BASE_URL = Deno.env.get("FEATHERLESS_BASE_URL") ??
   "https://api.featherless.ai/v1";
+// Defaults: non-gated, vision-capable, fits the $25 Premium plan (<=72B).
+// google/gemma-3-* is gated (needs HuggingFace OAuth) and 403s, so avoid it.
 const TEXT_MODEL = Deno.env.get("FEATHERLESS_TEXT_MODEL") ??
-  "google/gemma-3-27b-it";
+  "Qwen/Qwen3-VL-8B-Instruct";
 const VISION_MODEL = Deno.env.get("FEATHERLESS_VISION_MODEL") ??
-  "google/gemma-3-27b-it";
+  "Qwen/Qwen3-VL-8B-Instruct";
 
 function requireKey(): string {
   const key = Deno.env.get("FEATHERLESS_API_KEY");
