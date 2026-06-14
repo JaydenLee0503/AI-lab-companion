@@ -72,14 +72,33 @@
 
       <div class="row">
         <input type="checkbox" id="aiEnabled" />
-        <label for="aiEnabled">Use AI-written nudges (sends the site's name)</label>
+        <label for="aiEnabled">AI features (smarter nudges + on-demand page summaries)</label>
       </div>
       <p class="note" style="margin-top: 8px;">
-        Off by default. When on, the hostname of a distracting site (e.g.
-        <code>youtube.com</code>) is sent to NovaMind's server to write a
-        friendlier nudge. Never your browsing history, page content, or other
-        data. Turn it off and Focus Guard makes no network requests at all.
+        Off by default. When on: the hostname of a distracting site (e.g.
+        <code>youtube.com</code>) — plus the focus note and tone below — is sent
+        to NovaMind's server to write a friendlier, relevant nudge, and a
+        <strong>“Summarize this page”</strong> button appears in the toolbar
+        popup. The summary button sends <strong>that one page's visible text</strong>
+        to the server only when you click it. Turn AI off and Focus Guard makes
+        no network requests at all. These controls also live in the popup.
       </p>
+
+      <div class="row">
+        <label for="focusNote" style="min-width: 0;">What are you working on?</label>
+      </div>
+      <input type="text" id="focusNote" maxlength="140"
+             placeholder="e.g. density column lab"
+             style="width: 100%; box-sizing: border-box; margin-top: 8px; background: #0a0a0a; color: #fff; border: 1px solid rgba(255,255,255,0.15); padding: 8px;" />
+
+      <div class="row">
+        <label for="tone">Nudge tone</label>
+        <select id="tone" style="background: #0a0a0a; color: #fff; border: 1px solid rgba(255,255,255,0.15); padding: 6px 8px;">
+          <option value="gentle">Gentle</option>
+          <option value="strict">Strict</option>
+          <option value="funny">Funny</option>
+        </select>
+      </div>
 
       <div class="row">
         <label for="cooldown">Alert cooldown (seconds)</label>
@@ -96,12 +115,14 @@
       </div>
 
       <p class="note">
-        Privacy: Focus Guard only reads the hostname of your active tab to compare
-        it against this list. It never reads page content, passwords, messages, or
-        personal data. With AI nudges off (the default) it makes no network
-        requests at all; with them on, only the matched hostname leaves your
-        browser. Spoken alerts use your device's built-in voice — no audio is sent
-        anywhere.
+        Privacy: Focus Guard watches only the <strong>hostname</strong> of your
+        active tab to compare it against this list — never page content,
+        passwords, or messages. With AI off (the default) it makes no network
+        requests at all. With AI on, the matched hostname (plus your typed focus
+        note + tone) is sent for nudges, and the <strong>“Summarize this
+        page”</strong> button sends that one page's visible text — and only when
+        you click it. Spoken alerts use your device's built-in voice; no audio is
+        sent anywhere.
       </p>
     </div>
     <script src="options.js"></script>

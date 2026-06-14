@@ -4,6 +4,8 @@ const DEFAULTS = {
   enabled: true,
   voice: true,
   aiEnabled: false,
+  focusNote: "",
+  tone: "gentle",
   cooldownSeconds: 60,
   sites: [
     "instagram.com",
@@ -20,6 +22,8 @@ const DEFAULTS = {
 const enabledEl = document.getElementById("enabled");
 const voiceEl = document.getElementById("voice");
 const aiEnabledEl = document.getElementById("aiEnabled");
+const focusNoteEl = document.getElementById("focusNote");
+const toneEl = document.getElementById("tone");
 const cooldownEl = document.getElementById("cooldown");
 const sitesEl = document.getElementById("sites");
 const savedEl = document.getElementById("saved");
@@ -32,11 +36,13 @@ function parseSites(text) {
 }
 
 async function load() {
-  const { enabled, voice, aiEnabled, cooldownSeconds, sites } =
+  const { enabled, voice, aiEnabled, focusNote, tone, cooldownSeconds, sites } =
     await chrome.storage.sync.get(DEFAULTS);
   enabledEl.checked = Boolean(enabled);
   voiceEl.checked = Boolean(voice);
   aiEnabledEl.checked = Boolean(aiEnabled);
+  focusNoteEl.value = focusNote || "";
+  toneEl.value = tone || "gentle";
   cooldownEl.value = cooldownSeconds;
   sitesEl.value = (sites || []).join("\n");
 }
@@ -52,6 +58,8 @@ async function save() {
     enabled: enabledEl.checked,
     voice: voiceEl.checked,
     aiEnabled: aiEnabledEl.checked,
+    focusNote: focusNoteEl.value.trim().slice(0, 140),
+    tone: toneEl.value,
     cooldownSeconds: cooldown,
     sites: parseSites(sitesEl.value),
   });

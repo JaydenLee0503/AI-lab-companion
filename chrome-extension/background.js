@@ -17,6 +17,10 @@ const DEFAULTS = {
   enabled: true,
   voice: true,
   aiEnabled: false,
+  // Student-typed note of what they're working on (powers relevant AI nudges),
+  // and the tone the AI should use. Both only matter when aiEnabled is on.
+  focusNote: "",
+  tone: "gentle",
   cooldownSeconds: 60,
   sites: [
     "instagram.com",
@@ -64,7 +68,7 @@ function matches(host, sites) {
 // Opt-in only: ask the focus-coach edge function for a friendlier nudge. Sends
 // just the hostname, holds no secret key (the anon key is browser-safe), and
 // returns null on any problem so the caller can use the local fallback.
-async function aiNudge(host) {
+async function aiNudge(host, focus, tone) {
   const cfg = self.FOCUS_GUARD || {};
   if (!cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-REF")) return null;
   try {
@@ -75,7 +79,8 @@ async function aiNudge(host) {
         apikey: cfg.SUPABASE_ANON_KEY,
         Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY}`,
       },
-      body: JSON.stringify({ host }),
+      // focus is the note the student typed themselves; tone is their pick.
+      body: JSON.stringify({ host, focus: focus || "", tone: tone || "gentle" }),
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -89,7 +94,8 @@ async function aiNudge(host) {
 
 async function checkUrl(url) {
   if (!url || !/^https?:/i.test(url)) return;
-  const { enabled, voice, aiEnabled, sites, cooldownSeconds } = await getSettings();
+  const { enabled, voice, aiEnabled, focusNote, tone, sites, cooldownSeconds } =
+    await getSettings();
   if (!enabled) return;
 
   const host = hostnameFromUrl(url);
@@ -99,9 +105,14 @@ async function checkUrl(url) {
   if (lastAlert[host] && now - lastAlert[host] < cooldownSeconds * 1000) return;
   lastAlert[host] = now;
 
-  // Default message is fully local; AI (when opted in) only refines it.
-  const fallback = `${host} can wait — back to your lab. 🔬`;
-  const message = aiEnabled ? (await aiNudge(host)) || fallback : fallback;
+  // Default message is fully local; AI (when opted in) only refines it, using
+  // the student's own focus note + tone to make it relevant.
+  const fallback = focusNote
+    ? `${host} can wait — back to "${focusNote}". 🔬`
+    : `${host} can wait — back to your lab. 🔬`;
+  const message = aiEnabled
+    ? (await aiNudge(host, focusNote, tone)) || fallback
+    : fallback;
 
   chrome.notifications.create(`focus-${now}`, {
     type: "basic",

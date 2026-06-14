@@ -20,12 +20,21 @@ notification** nudging you back to work.
   data.
 - **By default, makes no network requests** — everything runs locally and
   settings live in `chrome.storage.sync`.
-- **Optional AI nudges (off by default):** if you enable them in Options, the
-  matched hostname (only the hostname) is POSTed to the `focus-coach` Supabase
-  edge function to generate a friendlier message. No API key lives in the
-  extension — it carries the same browser-safe anon key the web app ships, and
-  the secret model key stays server-side. Any failure falls back to the local
-  message. Turn the toggle off to return to zero network requests.
+- **Optional AI features (off by default):** the **AI features** toggle (in the
+  popup or Options) unlocks two things, both server-assisted:
+  - **Relevant nudges** — the matched hostname, plus the short focus note you
+    type and your chosen tone, is POSTed to the `focus-coach` edge function for
+    a friendlier, on-topic message. No browsing history or page content.
+  - **Quick page summary** — a **“Summarize this page”** button. *Only when you
+    click it*, the current page's visible text is sent to the `summarize` edge
+    function and a short summary comes back. This is the one path that reads page
+    content, it is per-click and explicit, and it uses the `activeTab` grant so
+    no standing access to your pages is held.
+
+  No API key lives in the extension — it carries the same browser-safe anon key
+  the web app ships, and the secret model key stays server-side. Any failure
+  falls back to the local message. Turn the toggle off to return to **zero
+  network requests** and zero page reads.
 
 ## Permissions (minimal)
 
@@ -34,7 +43,9 @@ notification** nudging you back to work.
 | `tabs`                         | Read the active tab's URL to compare its hostname. |
 | `storage`                      | Save your site list / settings. |
 | `notifications`                | Show the local focus alert. |
-| `host_permissions: *.supabase.co` | Only used when AI nudges are enabled, to reach the `focus-coach` function. |
+| `tts`                          | Speak alerts with the device voice (local). |
+| `activeTab` + `scripting`      | Only when you click **Summarize this page**: read that one tab's visible text on that click. No standing access. |
+| `host_permissions: *.supabase.co` | Reach the `focus-coach` / `summarize` functions when AI features are on. |
 
 ## AI nudges setup
 
@@ -83,6 +94,7 @@ This writes `frontend/public/focus-guard-extension.zip`, which the app's
 - `manifest.json` — MV3 manifest.
 - `background.js` — service worker; the tab-watching logic.
 - `config.js` — public Supabase URL + anon key for optional AI nudges.
-- `popup.html` / `popup.js` — toolbar popup (toggle + status).
-- `options.html` / `options.js` — settings page.
+- `popup.html` / `popup.js` — toolbar popup (guard toggle, AI toggle, focus
+  note, tone, and the on-demand page-summary button).
+- `options.html` / `options.js` — full settings page.
 - `icons/` — generated action icons.

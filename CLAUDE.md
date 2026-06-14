@@ -39,7 +39,8 @@ supabase/                 Supabase backend (primary)
   seed.sql                 Generated experiment rows
   functions/               Deno edge functions (the key-holding proxy)
     _shared/               http, featherless, elevenlabs, experiments helpers
-    health, tutor-chat, tutor-transition, vision-checkpoint, tts, focus-coach
+    health, tutor-chat, tutor-transition, vision-checkpoint, tts, focus-coach,
+    summarize (Focus Guard's opt-in, click-only page summarizer)
 
 chrome-extension/         Focus Guard (MV3) — packaged to
                           frontend/public/focus-guard-extension.zip
@@ -130,13 +131,19 @@ unpacked** → select the `chrome-extension` folder (or unzip the downloaded zip
 - Vision is checkpoint-based only — no "analyze any experiment".
 - Experiments must use cheap/household materials and be safe (no flame, no
   hazardous chemicals). Keep the library small and solid.
-- Chrome extension reads only the active tab hostname; never page content,
-  credentials, messages, or personal data. By default it makes no network
-  requests. It has ONE opt-in exception (off by default): "AI nudges" POSTs the
-  matched hostname — and only the hostname — to the `focus-coach` edge function.
+- Chrome extension's tab-watching reads only the active tab hostname; never page
+  content, credentials, messages, or personal data. By default it makes no
+  network requests. Two opt-in paths sit behind the single **AI features** toggle
+  (off by default):
+  1. **AI nudges** — POSTs the matched hostname plus the student's own typed
+     focus note + tone to `focus-coach`. No browsing data.
+  2. **Page summary** — a click-only "Summarize this page" button that reads the
+     current tab's visible text (via the `activeTab` grant + `scripting`) and
+     POSTs it to `summarize`. This is the ONE path that touches page content; it
+     is per-click, explicit, never automatic, and holds no standing page access.
   No secret key in the extension (it carries the browser-safe anon key); failures
   fall back to the local message. Keep the toggle default off and the privacy
-  copy honest.
+  copy honest about the summarize page-read.
 
 ## Verification checklist
 - [ ] `cd frontend; npm install` succeeds.

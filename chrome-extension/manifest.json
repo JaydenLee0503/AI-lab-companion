@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Focus Guard — NovaMind AI",
-  "version": "1.0.0",
-  "description": "Local alerts when you open distracting sites during a lab. Optional AI-written nudges are OFF by default; only when you turn them on does your active tab's hostname go to NovaMind's server.",
-  "permissions": ["tabs", "storage", "notifications", "tts"],
+  "version": "1.1.0",
+  "description": "Local alerts when you open distracting sites during a lab. Optional AI features are OFF by default: when on, a distracting tab's hostname goes to NovaMind's server for a friendlier nudge, and only when you click \"Summarize this page\" is that one page's text sent to summarize it.",
+  "permissions": ["tabs", "storage", "notifications", "tts", "scripting", "activeTab"],
   "host_permissions": ["https://*.supabase.co/*"],
   "background": {
     "service_worker": "background.js"
