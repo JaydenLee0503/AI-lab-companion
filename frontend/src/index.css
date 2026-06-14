@@ -310,9 +310,27 @@ nav.primary a:hover::after,
   color: #052012;
   border-color: transparent;
   font-weight: 500;
+  animation: btn-go-glow 1.8s ease-in-out infinite;
 }
 .btn.go:hover {
   background: oklch(0.88 0.13 150);
+}
+/* Pulsing green halo so the student notices the tutor has cleared them to
+   advance (Simulation Lab) or the vision check passed (Real Lab Guide). */
+@keyframes btn-go-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.84 0.12 150 / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 18px 4px oklch(0.84 0.12 150 / 0.45);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn.go {
+    animation: none;
+    box-shadow: 0 0 14px 2px oklch(0.84 0.12 150 / 0.45);
+  }
 }
 
 .menu-toggle {
@@ -1496,5 +1514,59 @@ nav.primary a:hover::after,
 @media (max-width: 860px) {
   .mobile-menu {
     display: flex;
+  }
+}
+
+/* Orbit loader — concentric circles spinning around to signal work in
+   progress (e.g. while a custom lab is being designed). */
+.orbit-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 0;
+}
+.orbit {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+.orbit .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+.orbit .ring.r1 {
+  border-top-color: var(--cyan);
+  border-right-color: var(--cyan);
+  animation: orbit-spin 1.1s linear infinite;
+}
+.orbit .ring.r2 {
+  inset: 12px;
+  border-bottom-color: var(--amber);
+  border-left-color: var(--amber);
+  animation: orbit-spin 1.5s linear infinite reverse;
+}
+.orbit .ring.r3 {
+  inset: 24px;
+  border-top-color: var(--cyan-dim);
+  border-left-color: var(--cyan-dim);
+  animation: orbit-spin 0.85s linear infinite;
+}
+@keyframes orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.orbit-loader .orbit-label {
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--silver);
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit .ring {
+    animation-duration: 2.4s !important;
   }
 }

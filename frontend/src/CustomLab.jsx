@@ -4,6 +4,7 @@ import RealLabGuide from "./RealLabGuide";
 import SimulationLab from "./SimulationLab";
 import {
   ErrorCard,
+  OrbitLoader,
   PageShell,
   Panel,
   PrimaryButton,
@@ -106,6 +107,7 @@ export default function CustomLab({ onBack }) {
                 {generating ? "Designing your lab…" : "Design my lab"}
               </PrimaryButton>
             </div>
+            {generating && <OrbitLoader />}
             <p style={{ marginTop: 12, fontSize: 13, color: "var(--muted)" }}>
               Labs use cheap household materials only — no flame or hazardous
               chemicals. Unsafe topics are declined.

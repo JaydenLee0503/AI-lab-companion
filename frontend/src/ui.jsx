@@ -89,6 +89,19 @@ export function SecondaryButton({ className = "", ...rest }) {
   return <button className={"btn " + className} {...rest} />;
 }
 
+export function OrbitLoader({ label = "Designing your lab…" }) {
+  return (
+    <div className="orbit-loader" role="status" aria-live="polite">
+      <div className="orbit" aria-hidden="true">
+        <span className="ring r1" />
+        <span className="ring r2" />
+        <span className="ring r3" />
+      </div>
+      {label && <p className="orbit-label">{label}</p>}
+    </div>
+  );
+}
+
 export function ErrorCard({ title, detail }) {
   return (
     <div role="alert" className="notice err">

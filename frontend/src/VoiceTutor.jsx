@@ -26,7 +26,12 @@ function buildContext(exp, step) {
     `What they would observe here: ${observation}. ` +
     (prompts ? `Socratic prompts you may draw from:\n${prompts}\n` : "") +
     `Act as a Socratic tutor on this step: short guiding questions, never the ` +
-    `answer outright, 1-3 sentences.`
+    `answer outright, 1-3 sentences. ` +
+    `When — and only when — the student has reasoned through THIS step ` +
+    `correctly and clearly understands it, silently call the ` +
+    `\`mark_ready_for_next_step\` tool so the app highlights the Next-step ` +
+    `button. Don't call it before they've shown understanding, don't call it ` +
+    `more than once per step, and never mention the tool out loud.`
   );
 }
 
@@ -50,6 +55,7 @@ function VoiceTutorInner({
   step,
   contextHint,
   firstMessage,
+  onReady,
   idleHint = "Real-time voice, powered by ElevenLabs.",
   startLabel = "Start live voice tutor",
 }) {
@@ -57,6 +63,11 @@ function VoiceTutorInner({
   const [starting, setStarting] = useState(false);
   const [transcript, setTranscript] = useState([]); // {source, text}
   const [text, setText] = useState("");
+  // Push-to-talk. The mic starts muted, so the agent never hears the room and
+  // never auto-replies while the student is thinking — it just waits. The
+  // student clicks "Speak" to start a turn (mic unmutes) and "Stop" to end it
+  // (mic mutes again), which lets the agent answer. Typing works regardless.
+  const [micMuted, setMicMuted] = useState(true);
   const transcriptEndRef = useRef(null);
 
   // The agent has client overrides enabled, so we send the Socratic context as
@@ -81,6 +92,19 @@ function VoiceTutorInner({
   }
 
   const conversation = useConversation({
+    // Controlled push-to-talk: the agent only hears the student while unmuted.
+    micMuted,
+    // The implementation of the agent's `mark_ready_for_next_step` client tool.
+    // The tool must ALSO be defined on the agent in the ElevenLabs dashboard
+    // (type: client, no parameters) — overrides can't declare tools, so without
+    // that definition the agent never calls it. When the standalone tutor is
+    // running there's no step/onReady, so this is a harmless no-op.
+    clientTools: {
+      mark_ready_for_next_step: () => {
+        onReady?.();
+        return "Acknowledged — the Next-step button is now highlighted.";
+      },
+    },
     onConnect: () => setError(null),
     onMessage: (m) => {
       if (!m || !m.message) return;
@@ -110,6 +134,25 @@ function VoiceTutorInner({
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
 
+  // In the Simulation Lab one live session spans the whole experiment. When the
+  // student moves to a new step, steer the SAME agent with a contextual update
+  // (no reconnect, no override) so it tutors on the current step. The first
+  // step's context already went out as the session-start override, so we only
+  // fire on an actual change.
+  const stepKey = step?.id;
+  const lastStepRef = useRef(stepKey);
+  useEffect(() => {
+    if (lastStepRef.current === stepKey) return;
+    lastStepRef.current = stepKey;
+    if (!connected || !step) return;
+    try {
+      conversation.sendContextualUpdate(buildContext(exp, step));
+    } catch {
+      /* session not live — start() will send fresh context as the override */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepKey, connected]);
+
   // End the session if the user navigates away. endSession() returns void in
   // this SDK version (not a Promise), so don't chain .catch on it.
   useEffect(() => {
@@ -128,6 +171,7 @@ function VoiceTutorInner({
     setStarting(true);
     setError(null);
     setTranscript([]);
+    setMicMuted(true); // begin each session in "thinking" mode — push to talk
     try {
       // Prompt for the mic up front so failures surface clearly.
       await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -184,7 +228,21 @@ function VoiceTutorInner({
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         {connected ? (
-          <SecondaryButton onClick={stop}>End voice session</SecondaryButton>
+          <>
+            {micMuted ? (
+              <PrimaryButton onClick={() => setMicMuted(false)}>
+                🎤 Speak
+              </PrimaryButton>
+            ) : (
+              <PrimaryButton
+                onClick={() => setMicMuted(true)}
+                style={{ borderColor: "#f87171", color: "#f87171" }}
+              >
+                ⏹ Stop
+              </PrimaryButton>
+            )}
+            <SecondaryButton onClick={stop}>End voice session</SecondaryButton>
+          </>
         ) : (
           <PrimaryButton onClick={start} disabled={starting}>
             {starting ? "Connecting…" : startLabel}
@@ -192,9 +250,11 @@ function VoiceTutorInner({
         )}
         <span style={{ fontSize: 13, color: "var(--silver)" }}>
           {connected
-            ? conversation.isSpeaking
-              ? "Tutor is speaking…"
-              : "Listening — talk, or type below."
+            ? !micMuted
+              ? "Listening — click Stop when you're done."
+              : conversation.isSpeaking
+                ? "Tutor is speaking…"
+                : "Your turn — click Speak to talk, or type below. Take your time."
             : idleHint}
         </span>
       </div>
