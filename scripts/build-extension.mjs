@@ -24,17 +24,28 @@ mkdirSync(outDir, { recursive: true });
 rmSync(out, { force: true });
 
 if (process.platform === "win32") {
-  // `<dir>\*` archives the folder's CONTENTS at the root (subfolders like
-  // icons/ are preserved), not the folder itself — so there's no wrapper.
-  execFileSync(
-    "powershell",
-    [
-      "-NoProfile",
-      "-Command",
-      `Compress-Archive -Path '${join(srcDir, "*")}' -DestinationPath '${out}' -Force`,
-    ],
-    { stdio: "inherit" }
-  );
+  // Build the zip with explicit FORWARD-SLASH entry names. Neither
+  // Compress-Archive nor .NET Framework's ZipFile.CreateFromDirectory works
+  // here: both write BACKSLASH separators (e.g. `icons\icon16.png`), which
+  // violate the ZIP spec (it mandates `/`). Chrome then can't find
+  // `icons/icon16.png` after unzip and reports
+  // "Could not load icon 'icons/icon16.png'". So we open a ZipArchive and add
+  // each file ourselves, normalizing the relative path to `/`. The folder's
+  // CONTENTS land at the archive root (no wrapper dir).
+  const ps = [
+    `Add-Type -AssemblyName System.IO.Compression.FileSystem;`,
+    `$src = (Resolve-Path '${srcDir}').Path;`,
+    `$zip = [System.IO.Compression.ZipFile]::Open('${out}', 'Create');`,
+    `try {`,
+    `  Get-ChildItem -LiteralPath $src -Recurse -File | ForEach-Object {`,
+    `    $rel = $_.FullName.Substring($src.Length).Replace('\\','/').TrimStart('/');`,
+    `    [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $_.FullName, $rel);`,
+    `  }`,
+    `} finally { $zip.Dispose() }`,
+  ].join(" ");
+  execFileSync("powershell", ["-NoProfile", "-Command", ps], {
+    stdio: "inherit",
+  });
 } else {
   // zip the contents from inside the folder so the archive has no wrapper dir.
   execFileSync("zip", ["-r", out, "."], {
