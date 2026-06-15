@@ -10,10 +10,17 @@ function visionUserPrompt(step: Step): string {
   if (!cp) return "Describe the image briefly.";
   const criteria = cp.success_criteria.map((c) => `- ${c}`).join("\n");
   return (
-    `You are verifying a student's lab setup at step "${step.id}".\n` +
+    `You are encouraging a student through a lab setup at step "${step.id}".\n` +
     `Expected scene: ${cp.expected_state}\n` +
-    `Success criteria (ALL must be true to pass):\n` +
+    `Things that suggest they are on the right track (these are GUIDES, not a ` +
+    `strict checklist):\n` +
     `${criteria}\n\n` +
+    `Default to passing. Set "passed": true if the scene plausibly matches the ` +
+    `expected setup, OR if you are unsure, OR if most of the relevant elements ` +
+    `are present even partially. The image may be blurry, dim, or at an awkward ` +
+    `angle — give the student the benefit of the doubt. Only set ` +
+    `"passed": false when the setup is clearly and obviously wrong (a totally ` +
+    `different scene, a missing essential item, or a visible safety hazard).\n\n` +
     `Respond with ONLY a JSON object of the form:\n` +
     `{"passed": <true|false>, "observations": "<1-2 sentence description of what you see>"}\n` +
     `Do not include any other text.`
@@ -32,9 +39,11 @@ Deno.serve(handle(async (req) => {
   }
 
   const system =
-    "You are a careful but encouraging lab safety verifier. " +
-    "You judge a webcam image against a list of success criteria. " +
-    "Be lenient about lighting and angle, strict about the actual physical state.";
+    "You are a warm, encouraging lab coach, not a strict grader. " +
+    "You glance at a webcam image and decide whether a student can move on. " +
+    "Be very lenient: pass whenever the setup is roughly right or you are " +
+    "uncertain, forgiving poor lighting, blur, and odd angles. Only hold a " +
+    "student back when something is clearly, obviously wrong or unsafe.";
 
   const result = await visionVerify(image_b64, system, visionUserPrompt(step));
   const passed = Boolean(result.passed);
